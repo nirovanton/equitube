@@ -35,14 +35,21 @@ class Equitube:
         self._density = variables.density
 
     def _parseOptions(self, argv, parser):
+
         density_help_list = [
             "This option allows you to specify the nanotube ",
             "density for the system. This is used to approximate ",
             "the number of tubes created during the simulation."
             ]
-        parser.add_option('--density', '-d', default='0.5',
+        parser.add_option('--density', '-d', default=0.5,
             help=''.join(density_help_list))
-
+        area_help_list = [
+            "This option allows you to specity the size of the ",
+            "field on which the nanotubes are oriented."
+            ]
+        parser.add_option('--area', '-a', default=10,
+            help+''.join(area_help_list))
+       
         return parser.parse_args()
 
 
