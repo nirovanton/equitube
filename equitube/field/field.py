@@ -27,12 +27,12 @@ class Field():
     it with a number of nodes yielded with the given density.
     """
 
-    def __init__(self, density = False, area = False):
+    def __init__(self, density = False, length = False):
         """Initializes the field
         
         """
         self._density = density
-        self._area = area
+        self._length = length
 
     def getVanderPotential():
         """Calculates the Van der Waals Potential for the system
@@ -57,5 +57,6 @@ class Field():
 
     def addTube():
         """ This function adds a tube to the system """
+        
         return None
 

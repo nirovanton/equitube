@@ -43,18 +43,19 @@ class Equitube:
             ]
         parser.add_option('--density', '-d', default=0.5,
             help=''.join(density_help_list))
-        area_help_list = [
-            "This option allows you to specity the size of the ",
-            "field on which the nanotubes are oriented."
+        length_help_list = [
+            "This option allows you to specity the length of the ",
+            "field on which the nanotubes are oriented, the field ",
+            "is square for simplicity."
             ]
-        parser.add_option('--area', '-a', default=10,
+        parser.add_option('--length', '-l', default=10,
             help=''.join(area_help_list))
        
         return parser.parse_args()
 
 
 class Tube:
-    def __init__(self, argv):
+    def __init__(self,length)
         self._m = None
         self._l = None
         self._b = None
@@ -68,7 +69,7 @@ class Tube:
 
     def create_line():
         self._m = random.randint(-20,20)
-        self._l = random.uniform(5,12)
+        self._l = length
         self._xcm, self._ycm = random.uniform(10,15)
         self._theta = np.arctan(math.sqrt(self._m*self._m))
         self._xmin = self._xcm - self._l*np.cos(self._theta)
