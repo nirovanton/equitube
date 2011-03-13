@@ -48,7 +48,7 @@ class Equitube:
             "field on which the nanotubes are oriented."
             ]
         parser.add_option('--area', '-a', default=10,
-            help+''.join(area_help_list))
+            help=''.join(area_help_list))
        
         return parser.parse_args()
 
