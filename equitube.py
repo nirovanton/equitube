@@ -41,6 +41,7 @@ def intersect(x_min, x_max, b1, b2, m1, m2)
 
 
 '''
+test
 fig = plt.figure()
 ax = fig.add_subplot(111)
 x, y = np.random.rand(2, 2)
