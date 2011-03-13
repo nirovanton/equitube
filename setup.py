@@ -1,8 +1,5 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
 ########################################################################
-# Copyright (C) 2011 by John Harris <harrisj@mnstate.edu>              #
+# Copyright (C) 2008 by Alex Brandt <alunduil@alunduil.com>            #
 #                                                                      #
 # This program is free software; you can redistribute it and#or modify #
 # it under the terms of the GNU General Public License as published by #
@@ -20,16 +17,14 @@
 # 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.            #
 ########################################################################
 
-from sys import argv, exit
+from distutils.core import setup
 
-from equitube import Equitube, Tube, EquitubeException
-from equitube.output import error
-
-if __name__ == "__main__":
-    try:
-        application = Equitube(argv)
-        application.Run()
-    except EquitubeException, e: 
-        if (len(e.GetMessage()) > 0): error(e.GetMessage())
-
-
+setup(name='equitube',
+    version='1.0',
+    description="Nanotube network simulation.",
+    author="John Harris",
+    author_email="harrisj@mnstate.edu",
+    license="GPL-2",
+    scripts=["equitube.py"],
+    #packages=['upkern', 'upkern.kernel', 'upkern.bootloader'],
+    )

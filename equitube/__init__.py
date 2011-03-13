@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 ########################################################################
@@ -20,16 +19,5 @@
 # 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.            #
 ########################################################################
 
-from sys import argv, exit
-
 from equitube import Equitube, Tube, EquitubeException
-from equitube.output import error
-
-if __name__ == "__main__":
-    try:
-        application = Equitube(argv)
-        application.Run()
-    except EquitubeException, e: 
-        if (len(e.GetMessage()) > 0): error(e.GetMessage())
-
 

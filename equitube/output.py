@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 ########################################################################
@@ -20,16 +19,39 @@
 # 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.            #
 ########################################################################
 
-from sys import argv, exit
+from sys import stderr
+from inspect import stack
 
-from equitube import Equitube, Tube, EquitubeException
-from equitube.output import error
+class Colors:
+    GRAY = "\033[22;37m"
+    LIGHT_RED = "\033[01;31m"
+    YELLOW = "\033[01;33m"
+    LIGHT_BLUE = "\033[01;34m"
+    LIGHT_GREEN = "\033[01;32m"
 
-if __name__ == "__main__":
-    try:
-        application = Equitube(argv)
-        application.Run()
-    except EquitubeException, e: 
-        if (len(e.GetMessage()) > 0): error(e.GetMessage())
+def debug(file, dict):
+    for key, value in dict.iteritems():
+        output = [
+            Colors.YELLOW, file, ":", str(stack()[1][2]), ": DEBUG: ",
+            unicode(key), " -> ", unicode(value), Colors.GRAY
+            ]
+        print >> stderr, "".join(output)
 
+def verbose(msg, *args):
+    output = Colors.LIGHT_BLUE
+    if len(args) > 0: output += msg % args
+    else: output += msg
+    print output + Colors.GRAY
+
+def status(msg, *args):
+    output = Colors.LIGHT_GREEN
+    if len(args) > 0: output += msg % args
+    else: output += msg
+    print output + Colors.GRAY
+
+def error(msg, *args):
+    output = Colors.LIGHT_RED + "ERROR: "
+    if len(args) > 0: ouput += msg % args
+    else: output += msg
+    print >> stderr, output + Colors.GRAY
 
