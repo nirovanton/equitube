@@ -19,9 +19,6 @@
 #########################################################################
 
 import matplotlib.pyplot as plt
-import numpy as np
-import math
-import random
 import optparse
 
 
@@ -49,39 +46,10 @@ class Equitube:
             "is square for simplicity."
             ]
         parser.add_option('--length', '-l', default=10,
-            help=''.join(area_help_list))
+            help=''.join(length_help_list))
        
         return parser.parse_args()
 
-
-class Tube:
-    def __init__(self,length)
-        self._m = None
-        self._l = None
-        self._b = None
-        self._xcm = None
-        self._xmin = None
-        self._xmax = None
-        self._ycm = None
-        self._ymin = None
-        self._ymax = None
-        self._theta = None
-
-    def create_line():
-        self._m = random.randint(-20,20)
-        self._l = length
-        self._xcm, self._ycm = random.uniform(10,15)
-        self._theta = np.arctan(math.sqrt(self._m*self._m))
-        self._xmin = self._xcm - self._l*np.cos(self._theta)
-        self._xmax = self._xcm + self._l*np.cos(self._theta)
-        self._ymin = self._ycm - self._l*np.sin(self._theta)
-        self._ymax = self._ycm + self._l*np.sin(self._theta)
-        self._b = self._ycm - self._m*self._xcm 
-
-        return self._m, self._l, self._theta, self._xmin, self._xcm, self._xmax, self._ymin, self._ycm, self._ymax
-
-
-    
 class EquitubeException(Exception):
     def __init__(self, message, *args):
         super(EquitubeException, self).__init__(args)
@@ -90,30 +58,3 @@ class EquitubeException(Exception):
     def GetMessage(self):
         return self._message
 
-
-'''
-def intersect(x_min, x_max, b1, b2, m1, m2):
-    
-    # This function evaluates 2 node to see if they intersect within
-    # the node range x_min and x_max both need to come from the same
-    # node, it doesn't which node.
- 
-    x_int = (b2-b1)/(m1-m2)
-    if x_min <= x_int and x_int <= x_max:
-        return True
-    return False
-'''
-
-
-'''
-test
-fig = plt.figure()
-ax = fig.add_subplot(111)
-x, y = np.random.rand(2, 2)
-x1,y1 = np.random.rand(2, 2)
-line = ax.plot(x, y, 'bs-')
-line1 = ax.plot(x1, y1, 'bs-', picker=5)
-
-plt.draw()
-plt.show()
-'''

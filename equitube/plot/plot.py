@@ -21,10 +21,9 @@
 
 import matplotlib.pyplot as plt
 
+
 class Plot:
-    """The Class for generating the graphs via matplotlib.
-
-    """
-
+    
     def __init__(self):
-        
+        self._foo = False
+
