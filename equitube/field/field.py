@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ########################################################################
-# Copyright (C) 2011 by John Harris <harrisj@mnstate.edu               #
+# Copyright (C) 2011 by John Harris <harrisj@mnstate.edu>              #
 #                                                                      #
 # This program is free software; you can redistribute it and#or modify #
 # it under the terms of the GNU General Public License as published by #
@@ -33,6 +33,8 @@ class Field():
         """
         self._density = density
         self._length = length
+        self._nodelist = []
+
 
     def getVanderPotential():
         """Calculates the Van der Waals Potential for the system
