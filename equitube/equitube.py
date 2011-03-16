@@ -18,7 +18,13 @@
 # 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 #########################################################################
 
-import matplotlib.pyplot as plt
+import sys
+
+try:
+    import matplotlib.pyplot as plt
+except:
+    print >> sys.stderr, "Could not load matplotlib.  Perhaps, install matplotlib?"
+
 import optparse
 
 from field import Field
