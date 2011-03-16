@@ -31,5 +31,6 @@ if __name__ == "__main__":
         application.Run()
     except EquitubeException, e: 
         if (len(e.GetMessage()) > 0): error(e.GetMessage())
-
+        exit(1)
+    exit(0)
 

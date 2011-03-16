@@ -41,8 +41,7 @@ class Field():
         """
 
         self.tubes = [ Tube for x in range(0, number) ]
-        return None
-
+        return None 
 
     def getVanderPotential():
         """Calculates the Van der Waals Potential for the system

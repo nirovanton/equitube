@@ -21,6 +21,9 @@
 import matplotlib.pyplot as plt
 import optparse
 
+from field import Field
+from plot import Plot
+from tube import Tube
 
 class Equitube:
     def __init__(self,argv):
@@ -30,6 +33,7 @@ class Equitube:
         variables, arguments = self._parseOptions(argv, parser)
 
         self._density = variables.density
+        self._length = variables.length
 
     def _parseOptions(self, argv, parser):
 
@@ -50,8 +54,12 @@ class Equitube:
        
         return parser.parse_args()
  
-    
-    #TODO run method
+    def Run(self):
+        try:
+            field = Field
+            field.addTubes(self._density*self._length*self._length)
+        except EquitubeException, e:
+            raise EquitubeException(e.get_message())
 
 
 class EquitubeException(Exception):

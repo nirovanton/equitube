@@ -35,6 +35,6 @@ class Plot:
         it generates a periodic boundry condition and plots individual
         line segments for each tube object.
         """
-
+        return None
 
 
