@@ -24,7 +24,7 @@ import math
 import random
 
 class Tube:
-    def __init__(self,length):
+    def __init__(self,length = False):
         self._m = None
         self._l = None
         self._b = None
@@ -35,11 +35,12 @@ class Tube:
         self._ymin = None
         self._ymax = None
         self._theta = None
+        self._length = lenth
 
     def create_line():
         self._m = random.randint(-20,20)
-        self._l = length
-        self._xcm, self._ycm = random.uniform(10,15)
+        self._l = random.randint(3,10)
+        self._xcm, self._ycm = random.uniform(0,self.length)
         self._theta = np.arctan(math.sqrt(self._m*self._m))
         self._xmin = self._xcm - self._l*np.cos(self._theta)
         self._xmax = self._xcm + self._l*np.cos(self._theta)

@@ -23,17 +23,25 @@
 class Field():
     """An object for creating the field that holds the tube network.
     
-    Creates a blank 2d field with the specified area, and populates
-    it with a number of nodes yielded with the given density.
+    The Field class only keeps track of the different instances of
+    the tube objects. It also uses this list to gain access to each
+    tube object and calculate the energies of the entire field.
     """
 
-    def __init__(self, density = False, length = False):
+    def __init__(self):
         """Initializes the field
-        
         """
-        self._density = density
-        self._length = length
-        self._nodelist = []
+        self._tubes = []
+
+    def addTubes(number = 1):
+        """This function adds a tube to the system 
+
+        This function will initialize another tube object and will add it
+        to the list of active tubes.
+        """
+
+        self.tubes = [ Tube for x in range(0, number) ]
+        return None
 
 
     def getVanderPotential():
@@ -41,7 +49,7 @@ class Field():
 
         This function uses the attributes stored within each tube object
         to calculate the Van der Waals energies as a function of theta.
-        It will have the form 1/sin(theta)
+        for the entire system. It will have the form 1/sin(theta)
         """
         return None
 
@@ -50,15 +58,6 @@ class Field():
         
         This function will consider small changes in center and end
         point position and use it to calculate the spring potential energy.
+        of the entire system.
         """
         return None
-
-    def removeTube():
-        """ This function will remove a tube from the system """
-        return None
-
-    def addTube():
-        """ This function adds a tube to the system """
-        
-        return None
-

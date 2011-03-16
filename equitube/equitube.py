@@ -49,6 +49,10 @@ class Equitube:
             help=''.join(length_help_list))
        
         return parser.parse_args()
+ 
+    
+    #TODO run method
+
 
 class EquitubeException(Exception):
     def __init__(self, message, *args):
