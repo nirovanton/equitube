@@ -42,7 +42,7 @@ class Field:
         to the list of active tubes.
         """
 
-        self.tubes = [ Tube(self.length) for x in range(0, number) ]
+        self.tubes = [ Tube(self._length) for x in range(0, number) ]
         for node in self.tubes:
             node.createLine()
         return None 

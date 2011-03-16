@@ -66,7 +66,8 @@ class Equitube:
             field = Field(self._length)
             field.addTubes(self._count)
             tube_list = field.getTubes()
-            print type(tube_list[2].getParams())   
+            params = tube_list[2].getParams()
+            print params['l']
         except EquitubeException, e:
             raise EquitubeException(e.get_message())
 

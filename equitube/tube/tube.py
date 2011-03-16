@@ -47,20 +47,21 @@ class Tube:
     def createLine(self):
         """ Generating a random Line segment
         """
-        self.m = random.randint(-20,20)
-        self.l = random.randint(3,10)
-        self.xcm, self._ycm = random.uniform(0,self.length)
-        self.theta = np.arctan(math.sqrt(self._m*self._m))
-        self.xmin = self._xcm - self._l*np.cos(self._theta)
-        self.xmax = self._xcm + self._l*np.cos(self._theta)
-        self.ymin = self._ycm - self._l*np.sin(self._theta)
-        self.ymax = self._ycm + self._l*np.sin(self._theta)
-        self.b = self._ycm - self._m*self._xcm
+        self._m = random.randint(-20,20)
+        self._l = random.randint(3,10)
+        self._xcm = random.uniform(0,self._length)
+        self._ycm = random.uniform(0,self._length)
+        self._theta = np.arctan(math.sqrt(self._m*self._m))
+        self._xmin = self._xcm - self._l*np.cos(self._theta)
+        self._xmax = self._xcm + self._l*np.cos(self._theta)
+        self._ymin = self._ycm - self._l*np.sin(self._theta)
+        self._ymax = self._ycm + self._l*np.sin(self._theta)
+        self._b = self._ycm - self._m*self._xcm
         
         return None
 
     def getParams(self):
         """ A function that returns requested parameters.
         """
-        params = {'m':self.m,'l':self.l,'b':self.b,'xcm':self.xcm,'ycm':self.ycm,'xmin':self.xmin,'xmax':self.xmax,'ymin':self.ymin,'ymax':self.ymax,'theta':self.theta}
+        params = {'m':self._m,'l':self._l,'b':self._b,'xcm':self._xcm,'ycm':self._ycm,'xmin':self._xmin,'xmax':self._xmax,'ymin':self._ymin,'ymax':self._ymax,'theta':self._theta}
         return params 
