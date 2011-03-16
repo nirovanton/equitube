@@ -38,18 +38,18 @@ class Equitube:
         parser = optparse.OptionParser(usage=usage)
         variables, arguments = self._parseOptions(argv, parser)
 
-        self._density = variables.density
+        self._count = variables.count
         self._length = variables.length
 
     def _parseOptions(self, argv, parser):
 
-        density_help_list = [
+        count_help_list = [
             "This option allows you to specify the nanotube ",
-            "density for the system. This is used to approximate ",
-            "the number of tubes created during the simulation."
+            "count for the system. This is the number of tubes",
+            "created during the simulation."
             ]
-        parser.add_option('--density', '-d', default=0.5,
-            help=''.join(density_help_list))
+        parser.add_option('--count', '-c', default=50,
+            help=''.join(count_help_list))
         length_help_list = [
             "This option allows you to specity the length of the ",
             "field on which the nanotubes are oriented, the field ",
@@ -59,11 +59,14 @@ class Equitube:
             help=''.join(length_help_list))
        
         return parser.parse_args()
- 
+
+
     def Run(self):
         try:
-            field = Field
-            field.addTubes(self._density*self._length*self._length)
+            field = Field(self._length)
+            field.addTubes(self._count)
+            tube_list = field.getTubes()
+            print type(tube_list[2].getParams())   
         except EquitubeException, e:
             raise EquitubeException(e.get_message())
 

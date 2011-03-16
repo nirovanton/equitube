@@ -25,6 +25,13 @@ import random
 
 class Tube:
     def __init__(self,length = False):
+        """ Initializes a clean tube
+        
+        the length parameter specifies the dimmentions
+        of the field, It is passed to the class to ensure
+        that the randomly generated tubes have a center pt
+        inside the bounds of the field.
+        """
         self._m = None
         self._l = None
         self._b = None
@@ -35,16 +42,25 @@ class Tube:
         self._ymin = None
         self._ymax = None
         self._theta = None
-        self._length = lenth
+        self._length = length
 
-    def create_line():
-        self._m = random.randint(-20,20)
-        self._l = random.randint(3,10)
-        self._xcm, self._ycm = random.uniform(0,self.length)
-        self._theta = np.arctan(math.sqrt(self._m*self._m))
-        self._xmin = self._xcm - self._l*np.cos(self._theta)
-        self._xmax = self._xcm + self._l*np.cos(self._theta)
-        self._ymin = self._ycm - self._l*np.sin(self._theta)
-        self._ymax = self._ycm + self._l*np.sin(self._theta)
-        self._b = self._ycm - self._m*self._xcm
-        return self._m, self._l, self._theta, self._xmin, self._xcm, self._xmax, self._ymin, self._ycm, self._ymax
+    def createLine(self):
+        """ Generating a random Line segment
+        """
+        self.m = random.randint(-20,20)
+        self.l = random.randint(3,10)
+        self.xcm, self._ycm = random.uniform(0,self.length)
+        self.theta = np.arctan(math.sqrt(self._m*self._m))
+        self.xmin = self._xcm - self._l*np.cos(self._theta)
+        self.xmax = self._xcm + self._l*np.cos(self._theta)
+        self.ymin = self._ycm - self._l*np.sin(self._theta)
+        self.ymax = self._ycm + self._l*np.sin(self._theta)
+        self.b = self._ycm - self._m*self._xcm
+        
+        return None
+
+    def getParams(self):
+        """ A function that returns requested parameters.
+        """
+        params = {'m':self.m,'l':self.l,'b':self.b,'xcm':self.xcm,'ycm':self.ycm,'xmin':self.xmin,'xmax':self.xmax,'ymin':self.ymin,'ymax':self.ymax,'theta':self.theta}
+        return params 

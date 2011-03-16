@@ -19,8 +19,9 @@
 # 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.            #
 ########################################################################
 
+from equitube.tube import Tube
 
-class Field():
+class Field:
     """An object for creating the field that holds the tube network.
     
     The Field class only keeps track of the different instances of
@@ -28,21 +29,34 @@ class Field():
     tube object and calculate the energies of the entire field.
     """
 
-    def __init__(self):
+    def __init__(self,length):
         """Initializes the field
         """
         self._tubes = []
+        self._length = length
 
-    def addTubes(number = 1):
+    def addTubes(self, number = 1):
         """This function adds a tube to the system 
 
         This function will initialize another tube object and will add it
         to the list of active tubes.
         """
 
-        self.tubes = [ Tube for x in range(0, number) ]
+        self.tubes = [ Tube(self.length) for x in range(0, number) ]
+        for node in self.tubes:
+            node.createLine()
         return None 
 
+    def getTubes(self):
+        """Returns the generated tube array
+        """
+        return self.tubes
+   
+    def getTube(self,index):
+        """Return the tube assocaited with the passed index
+        """
+        return self.tubes[index]
+ 
     def getVanderPotential():
         """Calculates the Van der Waals Potential for the system
 
