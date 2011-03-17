@@ -32,7 +32,7 @@ class Field:
     def __init__(self,length):
         """Initializes the field
         """
-        self._tubes = []
+        self._tubes = {}
         self._length = length
 
     def addTubes(self, number = 1):
@@ -41,23 +41,24 @@ class Field:
         This function will initialize another tube object and will add it
         to the list of active tubes.
         """
-
-        self.tubes = [ Tube(self._length) for x in range(0, number) ]
-        for node in self.tubes:
-            node.createLine()
-        return None 
+        
+        for x in range(number):
+            self._tubes[x] = Tube(self._length)
+            self._tubes[x].createLine()
+        
+        return None
 
     def getTubes(self):
         """Returns the generated tube array
         """
-        return self.tubes
+        return self._tubes
    
     def getTube(self,index):
         """Return the tube assocaited with the passed index
         """
         return self.tubes[index]
  
-    def getVanderPotential():
+    def getVanderPotential(self):
         """Calculates the Van der Waals Potential for the system
 
         This function uses the attributes stored within each tube object
@@ -66,11 +67,36 @@ class Field:
         """
         return None
 
-    def getSpringPotential():
-        """Calculuates the Spring Potential energy stored in the substate.
+    def getSpringPotential(self):
+        """Calculates the Spring Potential energy stored in the substate.
         
         This function will consider small changes in center and end
         point position and use it to calculate the spring potential energy.
         of the entire system.
         """
         return None
+
+    def calculateIntercepts(self):
+        """Calculate the intercept of all the tubes.
+        
+        This function takes the collection of tubes and determines where
+        they intercept.
+        """
+        
+        for dex1 in range(len(self._tubes)):
+            tube1 = self._tubes[dex1].getParams()
+            for dex2 in range(len(self._tubes)):
+                tube2 = self._tubes[dex2].getParams()
+                if tube1['m'] == tube2['m']:
+                    continue
+                x = (tube2['b']-tube1['b'])/(tube1['m']-tube2['m'])
+                if x >= tube1['xmin'] and x <= tube1['xmax'] \
+                and x >= tube2['xmin'] and x <= tube2['xmax'] :
+                    self._tubes[dex1].addNeighbours(dex2)
+                    continue
+                else:
+                    continue
+        
+        return None 
+
+

@@ -65,9 +65,20 @@ class Equitube:
         try:
             field = Field(self._length)
             field.addTubes(self._count)
-            tube_list = field.getTubes()
-            params = tube_list[2].getParams()
-            print params['l']
+            field.calculateIntercepts()
+            tube_dict = field.getTubes()
+            for dex in range(len(tube_dict)):
+                params = tube_dict[dex].getParams()
+                neighbour_string = ""
+                for key in params['neighbours']:
+                    neighbour_string += " "+str(key)
+                print "Tube", dex,"::", neighbour_string
+            
+
+
+#            tube1 = tube_dict[3].getParams()
+#            for key in tube1['neighbours']:
+#                print type(str(key))
         except EquitubeException, e:
             raise EquitubeException(e.get_message())
 

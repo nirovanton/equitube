@@ -43,6 +43,7 @@ class Tube:
         self._ymax = None
         self._theta = None
         self._length = length
+        self._neighbours = []
 
     def createLine(self):
         """ Generating a random Line segment
@@ -57,11 +58,23 @@ class Tube:
         self._ymin = self._ycm - self._l*np.sin(self._theta)
         self._ymax = self._ycm + self._l*np.sin(self._theta)
         self._b = self._ycm - self._m*self._xcm
-        
+
+        return None
+
+    def addNeighbours(self, key):
+        """ Function for adding neighbors
+        The Field class keeps track of the tubes in the field with
+        a dict, key->Tube. This function appends the keys of all
+        interesecting tubes to the neighbours array.
+        """
+        self._neighbours.append(key)
+       
         return None
 
     def getParams(self):
         """ A function that returns requested parameters.
         """
-        params = {'m':self._m,'l':self._l,'b':self._b,'xcm':self._xcm,'ycm':self._ycm,'xmin':self._xmin,'xmax':self._xmax,'ymin':self._ymin,'ymax':self._ymax,'theta':self._theta}
-        return params 
+        params = {'m':self._m,'l':self._l,'b':self._b,'xcm':self._xcm,'ycm':self._ycm,'xmin':self._xmin,'xmax':self._xmax,'ymin':self._ymin,'ymax':self._ymax,'theta':self._theta,'neighbours':self._neighbours}
+
+        return params
+
