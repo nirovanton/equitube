@@ -43,7 +43,7 @@ class Tube:
         self._ymax = None
         self._theta = None
         self._length = length
-        self._neighbours = []
+        self._neighbours = {}
 
     def createLine(self):
         """ Generating a random Line segment
@@ -61,16 +61,18 @@ class Tube:
 
         return None
 
-    def addNeighbours(self, key):
+    def addNeighbours(self, key, x_intercept):
         """ Function for adding neighbors
+        
         The Field class keeps track of the tubes in the field with
-        a dict, key->Tube. This function appends the keys of all
-        interesecting tubes to the neighbours array.
+        a dict, key->Tube. This function populates another dict,
+        (key of intercepting tube) -> (x coord of intercept)
+        y = mx+b is then used to find y coord of intercept
         """
-        self._neighbours.append(key)
-       
+        self._neighbours[key] = x_intercept 
+     
         return None
-
+    
     def getParams(self):
         """ A function that returns requested parameters.
         """

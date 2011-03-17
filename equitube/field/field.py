@@ -92,7 +92,7 @@ class Field:
                 x = (tube2['b']-tube1['b'])/(tube1['m']-tube2['m'])
                 if x >= tube1['xmin'] and x <= tube1['xmax'] \
                 and x >= tube2['xmin'] and x <= tube2['xmax'] :
-                    self._tubes[dex1].addNeighbours(dex2)
+                    self._tubes[dex1].addNeighbours(dex2,x)
                     continue
                 else:
                     continue
