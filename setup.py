@@ -20,11 +20,11 @@
 from distutils.core import setup
 
 setup(name='equitube',
-    version='1.0',
+    version='1.0.0',
     description="Nanotube network simulation.",
     author="John Harris",
     author_email="harrisj@mnstate.edu",
     license="GPL-2",
     scripts=["equitube.py"],
-    #packages=['upkern', 'upkern.kernel', 'upkern.bootloader'],
+    packages=['equitube', 'equitbue.field', 'equitube.plot', 'equitube.tube'],
     )
