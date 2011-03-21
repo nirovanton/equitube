@@ -73,9 +73,9 @@ class Equitube:
                 for dex2 in params['neighbours'].keys():
                     for angle in params['neighbours'][dex2].keys():
                         #angles only
-                        intersect_list += str(round(angle,4))+" "
+                        #intersect_list += str(round(angle,4))+" "
                         #complete intersection list
-                        #intersect_list += "_"+str(dex2)+"_:"+str(round(angle,4))+":"+str(round(params['neighbours'][dex2][angle],4))+" "     
+                        intersect_list += "_["+str(dex2)+"]_("+str(round(angle,4))+":"+str(round(params['neighbours'][dex2][angle],4))+") "     
                 print dex,"=  ",intersect_list
         except EquitubeException, e:
             raise EquitubeException(e.get_message())
