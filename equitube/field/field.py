@@ -80,7 +80,8 @@ class Field:
         """Calculate the intercept of all the tubes.
         
         This function takes the collection of tubes and determines where
-        they intercept.
+        they intercept as well as the angle of intercept. all intercept
+        angles are calculated to the right side of each intercept.
         """
         
         for dex1 in range(len(self._tubes)):
@@ -90,13 +91,35 @@ class Field:
                 if tube1['m'] == tube2['m']:
                     continue
                 x = (tube2['b']-tube1['b'])/(tube1['m']-tube2['m'])
+   
+                # Verify that the tubes intersect.
+                #TODO Make this more elegant.
                 if x >= tube1['xmin'] and x <= tube1['xmax'] \
                 and x >= tube2['xmin'] and x <= tube2['xmax'] :
-                    self._tubes[dex1].addNeighbours(dex2,x)
+                    
+                    # Both >= 0
+                    if tube1['m'] >= 0 and tube2['m'] >= 0:
+                        if tube1['m'] > tube2['m']:
+                            angle = tube1['theta']-tube2['theta']
+                        else:
+                            angle = tube2['theta']-tube1['theta']
+                    
+                    # Both < 0
+                    if tube1['m'] < 0 and tube2['m'] < 0:
+                        if tube1['m'] < tube2['m']:
+                            angle = tube1['theta']-tube2['theta']
+                        else:
+                            angle = tube2['theta']-tube1['theta']
+                    
+                    # One < 0 and One >= 0
+                    if tube1['m'] >= 0 and tube2['m'] < 0:
+                        angle = tube1['theta']+tube2['theta']
+                    if tube1['m'] < 0 and tube2['m'] >= 0:
+                        angle = tube1['theta']+tube2['theta']
+                    
+                    self._tubes[dex1].addNeighbours(dex2,angle,x)
                     continue
                 else:
                     continue
         
         return None 
-
-

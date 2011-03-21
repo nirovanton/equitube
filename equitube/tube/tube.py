@@ -48,7 +48,7 @@ class Tube:
     def createLine(self):
         """ Generating a random Line segment
         """
-        self._m = random.randint(-20,20)
+        self._m = random.randint(-50,50)
         self._l = random.randint(3,10)
         self._xcm = random.uniform(0,self._length)
         self._ycm = random.uniform(0,self._length)
@@ -61,7 +61,7 @@ class Tube:
 
         return None
 
-    def addNeighbours(self, key, x_intercept):
+    def addNeighbours(self, key, angle, x_intercept):
         """ Function for adding neighbors
         
         The Field class keeps track of the tubes in the field with
@@ -69,7 +69,8 @@ class Tube:
         (key of intercepting tube) -> (x coord of intercept)
         y = mx+b is then used to find y coord of intercept
         """
-        self._neighbours[key] = x_intercept 
+        self._neighbours[key] = dict()
+        self._neighbours[key][angle] = x_intercept 
      
         return None
     
