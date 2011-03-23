@@ -20,7 +20,6 @@
 ######################################################################## 
 
 import numpy as np
-import math
 import random
 
 class Tube:
@@ -49,17 +48,17 @@ class Tube:
     def createLine(self):
         """ Generating a random Line segment
         """
-        self._m = random.randint(-50,50)
-        self._l = random.randint(3,10)
+        self._m = random.uniform(-50,50)
+        self._l = random.uniform(3,10)
         self._xcm = random.uniform(0,self._length)
         self._ycm = random.uniform(0,self._length)
-        self._theta = np.arctan(math.sqrt(self._m*self._m))
+        self._theta = np.arctan(self._m)
         self._b = self._ycm - self._m*self._xcm
 
-        xmax = self._xcm + self._l*np.cos(self._theta)
-        xmin = self._xcm - self._l*np.cos(self._theta)
-        ymax = self._ycm + self._l*np.sin(self._theta)
-        ymin = self._ycm - self._l*np.sin(self._theta)
+        xmax = self._xcm + np.sqrt((self._l*np.cos(self._theta))**2)
+        xmin = self._xcm - np.sqrt((self._l*np.cos(self._theta))**2)
+        ymax = self._ycm + np.sqrt((self._l*np.sin(self._theta))**2)
+        ymin = self._ycm - np.sqrt((self._l*np.sin(self._theta))**2)
         if self._m <= 0:
             self._P = [xmin,ymax]
             self._Q = [xmax,ymin]

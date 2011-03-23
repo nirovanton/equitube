@@ -81,64 +81,44 @@ class Field:
             for index in neighbour_dict.keys():
                 xint = neighbour_dict[index][1]
                 yint = slope*xint + self._tubes[tube_id].getParams()['b']
-                theta = neighbour_dict[index][0]
+                phi = neighbour_dict[index][0]
+                torque = 1/np.sin(phi)-1
                 slope2 = self._tubes[index].getParams()['m']
                 
-                #TODO Make this more elegant.
-
-                # Both slopes > 0
-                if slope >= 0 and slope2 >= 0:
-                    torque = (1/np.sin(theta)-1)
+                if slope >= 0:
                     Rp = np.sqrt((xint-P[0])**2+(yint-P[1])**2)
                     Rq = np.sqrt((Q[0]-xint)**2+(Q[1]-yint)**2)
-                    if slope > slope2:
-                        Fp += torque/Rp
-                        Fq += -1*torque/Rq
-                    else:
-                        Fp += -1*torque/Rp
-                        Fq += torque/Rq
-                    continue
-
-                # Both slopes <= 0
-                if slope <= 0 and slope2 <= 0:
-                    torque = (1/np.sin(theta)-1)
-                    Rp = np.sqrt((xint-P[0])**2+(P[1]-yint)**2)
-                    Rq = np.sqrt((Q[0]-xint)**2+(Q[1]-yint)**2)
-                    if slope > slope2:
-                        Fp += torque/Rp
-                        Fq += -1*torque/Rq
-                    else:
-                        Fp += -1*torque/Rp
-                        Fq += torque/Rq
-                    continue
-
-                if slope < slope2:
+                else:
                     Rp = np.sqrt((xint-P[0])**2+(P[1]-yint)**2)
                     Rq = np.sqrt((Q[0]-xint)**2+(yint-Q[1])**2)
-                    if theta >= np.pi/2:
-                        torque = (1/np.sin(np.pi-theta)-1)
-                        Fp += torque/Rp
-                        Fq += -1*torque/Rq
-                    else:
-                        torque = (1/np.sin(theta)-1)
+                
+                if slope > slope2:
+                    if phi > np.pi/2:
                         Fp += -1*torque/Rp
                         Fq += torque/Rq
-                else:
-                    Rp = np.sqrt((xint-P[0])**2+(yint-P[1])**2)
-                    Rq = np.sqrt((Q[0]+xint)**2+(Q[1]-yint)**2)
-                    if theta >= np.pi/2:
-                        torque = (1/np.sin(np.pi-theta)-1)
-                        Fp += -1*torque/Rp
-                        Fq += torque/Rq
-                    else:
-                        torque = (1/np.sin(theta)-1)
+                        continue
+                    Fp += torque/Rp
+                    Fq += -1*torque/Rq
+                    continue
+                elif slope < slope2:
+                    if phi > np.pi/2:
                         Fp += torque/Rp
                         Fq += -1*torque/Rq
-                        print tube_id,"=",torque
+                        continue
+                    Fp += -1*torque/Rp
+                    Fq += torque/Rq
+                    continue
+
             if Fp > 0 and Fq > 0:
-                print tube_id, "Fp:", Fp,"Fq:", Fq 
-            if Fp < 0 and Fq < 0:
-                print tube_id, "Fp:", Fp,"Fq:", Fq
+                print "tube1: m",slope," b",self._tubes[tube_id].getParams()['b'],self._tubes[tube_id].getParams()['theta']," P(",P[0],",",P[1],") Q(",Q[0],",",Q[1],")"
+                cnt = 0 
+                for dex in neighbour_dict.keys():
+                    cnt += 1
+                    print "intercept",cnt,":: (",neighbour_dict[dex][1],",",slope*neighbour_dict[dex][1] + self._tubes[tube_id].getParams()['b'],") m",self._tubes[dex].getParams()['m']," phi",neighbour_dict[dex][0]
+                print Fp, Fq
+                break
+                break
+                break
         #return potential,pivot_dict
         return None
 
@@ -168,30 +148,12 @@ class Field:
                 x = (tube2['b']-tube1['b'])/(tube1['m']-tube2['m'])
    
                 # Verify that the tubes intersect.
-                #TODO Make this more elegant.
                 if x >= tube1['P'][0] and x <= tube1['Q'][0] \
                 and x >= tube2['P'][0] and x <= tube2['Q'][0] :
-                    
-                    # Both >= 0
-                    if tube1['m'] >= 0 and tube2['m'] >= 0:
-                        if tube1['m'] > tube2['m']:
-                            angle = tube1['theta']-tube2['theta']
-                        else:
-                            angle = tube2['theta']-tube1['theta']
-                    
-                    # Both < 0
-                    if tube1['m'] < 0 and tube2['m'] < 0:
-                        if tube1['m'] < tube2['m']:
-                            angle = tube1['theta']-tube2['theta']
-                        else:
-                            angle = tube2['theta']-tube1['theta']
-                    
-                    # One < 0 and One >= 0
-                    if tube1['m'] >= 0 and tube2['m'] < 0:
-                        angle = tube1['theta']+tube2['theta']
-                    if tube1['m'] < 0 and tube2['m'] >= 0:
-                        angle = tube1['theta']+tube2['theta']
-                    
+                    if tube1['m'] > tube2['m']:
+                        angle = tube1['theta'] - tube2['theta']
+                    else:
+                        angle = tube2['theta'] - tube1['theta']
                     self._tubes[dex1].addNeighbours(dex2,angle,x)
-        
-        return None 
+        return None
+
