@@ -86,11 +86,11 @@ class Field:
                 
                 #TODO Make this more elegant.
 
-                # Both slopes >= 0
+                # Both slopes > 0
                 if slope >= 0 and slope2 >= 0:
                     torque = (1/np.sin(theta)-1)
                     Rp = np.sqrt((xint-P[0])**2+(yint-P[1])**2)
-                    Rq = np.sqrt((xint+Q[0])**2+(yint+Q[1])**2)
+                    Rq = np.sqrt((Q[0]-xint)**2+(Q[1]-yint)**2)
                     if slope > slope2:
                         Fp += torque/Rp
                         Fq += -1*torque/Rq
@@ -99,11 +99,11 @@ class Field:
                         Fq += torque/Rq
                     continue
 
-                # Both slopes < 0
+                # Both slopes <= 0
                 if slope <= 0 and slope2 <= 0:
                     torque = (1/np.sin(theta)-1)
-                    Rp = np.sqrt((xint-P[0])**2+(yint+P[1])**2)
-                    Rq = np.sqrt((xint+Q[0])**2+(yint-Q[1])**2)
+                    Rp = np.sqrt((xint-P[0])**2+(P[1]-yint)**2)
+                    Rq = np.sqrt((Q[0]-xint)**2+(Q[1]-yint)**2)
                     if slope > slope2:
                         Fp += torque/Rp
                         Fq += -1*torque/Rq
@@ -113,8 +113,8 @@ class Field:
                     continue
 
                 if slope < slope2:
-                    Rp = np.sqrt((xint-P[0])**2+(yint+P[1])**2)
-                    Rq = np.sqrt((xint+Q[0])**2+(yint-Q[1])**2)
+                    Rp = np.sqrt((xint-P[0])**2+(P[1]-yint)**2)
+                    Rq = np.sqrt((Q[0]-xint)**2+(yint-Q[1])**2)
                     if theta >= np.pi/2:
                         torque = (1/np.sin(np.pi-theta)-1)
                         Fp += torque/Rp
@@ -125,7 +125,7 @@ class Field:
                         Fq += torque/Rq
                 else:
                     Rp = np.sqrt((xint-P[0])**2+(yint-P[1])**2)
-                    Rq = np.sqrt((xint+Q[0])**2+(yint+Q[1])**2)
+                    Rq = np.sqrt((Q[0]+xint)**2+(Q[1]-yint)**2)
                     if theta >= np.pi/2:
                         torque = (1/np.sin(np.pi-theta)-1)
                         Fp += -1*torque/Rp
@@ -134,9 +134,11 @@ class Field:
                         torque = (1/np.sin(theta)-1)
                         Fp += torque/Rp
                         Fq += -1*torque/Rq
-            print tube_id, "Fp:", Fp,"Fq:", Fq 
-
-
+                        print tube_id,"=",torque
+            if Fp > 0 and Fq > 0:
+                print tube_id, "Fp:", Fp,"Fq:", Fq 
+            if Fp < 0 and Fq < 0:
+                print tube_id, "Fp:", Fp,"Fq:", Fq
         #return potential,pivot_dict
         return None
 
