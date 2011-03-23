@@ -27,23 +27,24 @@ class Tube:
     def __init__(self,length = False):
         """ Initializes a clean tube
         
-        the length parameter specifies the dimmentions
+        the length parameter specifies the dimensions
         of the field, It is passed to the class to ensure
         that the randomly generated tubes have a center pt
         inside the bounds of the field.
+        
+        regardless of slope point P is always on left side.
+        P(x,y) 0----------------0 Q(x,y)
         """
         self._m = None
         self._l = None
         self._b = None
         self._xcm = None
-        self._xmin = None
-        self._xmax = None
         self._ycm = None
-        self._ymin = None
-        self._ymax = None
         self._theta = None
         self._length = length
         self._neighbours = {}
+        self._P = [] #[Xp,Yp]
+        self._Q = [] #[Xq,Yq]
 
     def createLine(self):
         """ Generating a random Line segment
@@ -53,31 +54,35 @@ class Tube:
         self._xcm = random.uniform(0,self._length)
         self._ycm = random.uniform(0,self._length)
         self._theta = np.arctan(math.sqrt(self._m*self._m))
-        self._xmin = self._xcm - self._l*np.cos(self._theta)
-        self._xmax = self._xcm + self._l*np.cos(self._theta)
-        self._ymin = self._ycm - self._l*np.sin(self._theta)
-        self._ymax = self._ycm + self._l*np.sin(self._theta)
         self._b = self._ycm - self._m*self._xcm
+
+        xmax = self._xcm + self._l*np.cos(self._theta)
+        xmin = self._xcm - self._l*np.cos(self._theta)
+        ymax = self._ycm + self._l*np.sin(self._theta)
+        ymin = self._ycm - self._l*np.sin(self._theta)
+        if self._m <= 0:
+            self._P = [xmin,ymax]
+            self._Q = [xmax,ymin]
+        else:
+            self._P = [xmin,ymin]
+            self._Q = [xmax,ymax]
 
         return None
 
     def addNeighbours(self, key, angle, x_intercept):
         """ Function for adding neighbors
         
-        The Field class keeps track of the tubes in the field with
-        a dict, key->Tube. This function populates another dict,
-        (key of intercepting tube) -> (x coord of intercept)
-        y = mx+b is then used to find y coord of intercept
+        The Field class keeps track of the intersecting
+        tubes via a dict'd list. {key:[angle,x_intecept]}
         """
-        self._neighbours[key] = dict()
-        self._neighbours[key][angle] = x_intercept 
+        self._neighbours[key] = list()
+        self._neighbours[key] = [angle,x_intercept]
      
         return None
     
     def getParams(self):
         """ A function that returns requested parameters.
         """
-        params = {'m':self._m,'l':self._l,'b':self._b,'xcm':self._xcm,'ycm':self._ycm,'xmin':self._xmin,'xmax':self._xmax,'ymin':self._ymin,'ymax':self._ymax,'theta':self._theta,'neighbours':self._neighbours}
+        params = {'m':self._m,'l':self._l,'b':self._b,'xcm':self._xcm,'ycm':self._ycm,'theta':self._theta,'P':self._P,'Q':self._Q,'neighbours':self._neighbours}
 
         return params
-

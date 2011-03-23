@@ -20,6 +20,7 @@
 ########################################################################
 
 from equitube.tube import Tube
+import numpy as np
 
 class Field:
     """An object for creating the field that holds the tube network.
@@ -56,15 +57,87 @@ class Field:
     def getTube(self,index):
         """Return the tube assocaited with the passed index
         """
-        return self.tubes[index]
+        return self._tubes[index]
  
     def getVanderPotential(self):
         """Calculates the Van der Waals Potential for the system
 
-        This function uses the attributes stored within each tube object
-        to calculate the Van der Waals energies as a function of theta.
-        for the entire system. It will have the form 1/sin(theta)
+        The intersections for each tube apply a torque that acts to 
+        rotate the tube about the intersection point. This function
+        calculates the effective torque and pivot point using the
+        intersectons. It also approximates the total potential energy
+        of the torques across the system. The function returns the total
+        Van der Waals potential for the system as well as the information
+        needed to rotate the tubes about the calculated pivot points.
         """
+        for tube_id in self._tubes.keys():
+            Fp = 0.0
+            Fq = 0.0
+            P = self._tubes[tube_id].getParams()['P'] #P[x,y]
+            Q = self._tubes[tube_id].getParams()['Q'] #Q[x,y]
+            slope = self._tubes[tube_id].getParams()['m']
+            neighbour_dict = self._tubes[tube_id].getParams()['neighbours']
+            
+            for index in neighbour_dict.keys():
+                xint = neighbour_dict[index][1]
+                yint = slope*xint + self._tubes[tube_id].getParams()['b']
+                theta = neighbour_dict[index][0]
+                slope2 = self._tubes[index].getParams()['m']
+                
+                #TODO Make this more elegant.
+
+                # Both slopes >= 0
+                if slope >= 0 and slope2 >= 0:
+                    torque = (1/np.sin(theta)-1)
+                    Rp = np.sqrt((xint-P[0])**2+(yint-P[1])**2)
+                    Rq = np.sqrt((xint+Q[0])**2+(yint+Q[1])**2)
+                    if slope > slope2:
+                        Fp += torque/Rp
+                        Fq += -1*torque/Rq
+                    else:
+                        Fp += -1*torque/Rp
+                        Fq += torque/Rq
+                    continue
+
+                # Both slopes < 0
+                if slope <= 0 and slope2 <= 0:
+                    torque = (1/np.sin(theta)-1)
+                    Rp = np.sqrt((xint-P[0])**2+(yint+P[1])**2)
+                    Rq = np.sqrt((xint+Q[0])**2+(yint-Q[1])**2)
+                    if slope > slope2:
+                        Fp += torque/Rp
+                        Fq += -1*torque/Rq
+                    else:
+                        Fp += -1*torque/Rp
+                        Fq += torque/Rq
+                    continue
+
+                if slope < slope2:
+                    Rp = np.sqrt((xint-P[0])**2+(yint+P[1])**2)
+                    Rq = np.sqrt((xint+Q[0])**2+(yint-Q[1])**2)
+                    if theta >= np.pi/2:
+                        torque = (1/np.sin(np.pi-theta)-1)
+                        Fp += torque/Rp
+                        Fq += -1*torque/Rq
+                    else:
+                        torque = (1/np.sin(theta)-1)
+                        Fp += -1*torque/Rp
+                        Fq += torque/Rq
+                else:
+                    Rp = np.sqrt((xint-P[0])**2+(yint-P[1])**2)
+                    Rq = np.sqrt((xint+Q[0])**2+(yint+Q[1])**2)
+                    if theta >= np.pi/2:
+                        torque = (1/np.sin(np.pi-theta)-1)
+                        Fp += -1*torque/Rp
+                        Fq += torque/Rq
+                    else:
+                        torque = (1/np.sin(theta)-1)
+                        Fp += torque/Rp
+                        Fq += -1*torque/Rq
+            print tube_id, "Fp:", Fp,"Fq:", Fq 
+
+
+        #return potential,pivot_dict
         return None
 
     def getSpringPotential(self):
@@ -94,8 +167,8 @@ class Field:
    
                 # Verify that the tubes intersect.
                 #TODO Make this more elegant.
-                if x >= tube1['xmin'] and x <= tube1['xmax'] \
-                and x >= tube2['xmin'] and x <= tube2['xmax'] :
+                if x >= tube1['P'][0] and x <= tube1['Q'][0] \
+                and x >= tube2['P'][0] and x <= tube2['Q'][0] :
                     
                     # Both >= 0
                     if tube1['m'] >= 0 and tube2['m'] >= 0:
@@ -118,8 +191,5 @@ class Field:
                         angle = tube1['theta']+tube2['theta']
                     
                     self._tubes[dex1].addNeighbours(dex2,angle,x)
-                    continue
-                else:
-                    continue
         
         return None 
