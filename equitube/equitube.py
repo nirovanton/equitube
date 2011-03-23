@@ -76,7 +76,11 @@ class Equitube:
                         #angles only
                         #intersect_list += str(round(angle,4))+" "
                         #complete intersection list
+<<<<<<< HEAD
                         intersect_list += "_"+str(dex2)+"_:"+str(round(angle,4))+":"+str(round(params['neighbours'][dex2][angle],4))+" "     
+=======
+                        intersect_list += "_["+str(dex2)+"]_("+str(round(angle,4))+":"+str(round(params['neighbours'][dex2][angle],4))+") "     
+>>>>>>> 8d8a29372883a4d8a2a1957753650b9bce499d4d
                 print dex,"=  ",intersect_list
             """
         except EquitubeException, e:
