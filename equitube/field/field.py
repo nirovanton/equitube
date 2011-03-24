@@ -33,6 +33,8 @@ class Field:
     def __init__(self,length):
         """Initializes the field
         """
+        self._startP = {}
+        self._startQ = {}
         self._tubes = {}
         self._length = length
 
@@ -42,11 +44,15 @@ class Field:
         This function will initialize another tube object and will add it
         to the list of active tubes.
         """
-        
+       
         for x in range(number):
             self._tubes[x] = Tube(self._length)
             self._tubes[x].createLine()
-        
+            params = self._tubes[x].getParams()
+            self._startP[x] = list()
+            self._startP[x] = params['P'] 
+            self._startQ[x] = list()
+            self._startQ[x] = params['Q']
         return None
 
     def getTubes(self):
@@ -109,16 +115,6 @@ class Field:
                     Fq += torque/Rq
                     continue
 
-            if Fp > 0 and Fq > 0:
-                print "tube1: m",slope," b",self._tubes[tube_id].getParams()['b'],self._tubes[tube_id].getParams()['theta']," P(",P[0],",",P[1],") Q(",Q[0],",",Q[1],")"
-                cnt = 0 
-                for dex in neighbour_dict.keys():
-                    cnt += 1
-                    print "intercept",cnt,":: (",neighbour_dict[dex][1],",",slope*neighbour_dict[dex][1] + self._tubes[tube_id].getParams()['b'],") m",self._tubes[dex].getParams()['m']," phi",neighbour_dict[dex][0]
-                print Fp, Fq
-                break
-                break
-                break
         #return potential,pivot_dict
         return None
 
