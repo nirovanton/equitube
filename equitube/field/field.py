@@ -58,7 +58,7 @@ class Field:
     def getTubes(self):
         """Returns the generated tube array
         """
-        return self._tubes
+        return self._tubes   
    
     def getTube(self,index):
         """Return the tube assocaited with the passed index
@@ -76,7 +76,9 @@ class Field:
         Van der Waals potential for the system as well as the information
         needed to rotate the tubes about the calculated pivot points.
         """
+        force_dict = {}
         for tube_id in self._tubes.keys():
+            force_dict[tube_id] = list()
             Fp = 0.0
             Fq = 0.0
             P = self._tubes[tube_id].getParams()['P'] #P[x,y]
@@ -102,21 +104,30 @@ class Field:
                     if phi > np.pi/2:
                         Fp += -1*torque/Rp
                         Fq += torque/Rq
-                        continue
                     Fp += torque/Rp
                     Fq += -1*torque/Rq
-                    continue
                 elif slope < slope2:
                     if phi > np.pi/2:
                         Fp += torque/Rp
                         Fq += -1*torque/Rq
-                        continue
                     Fp += -1*torque/Rp
                     Fq += torque/Rq
-                    continue
+                
+                force_dict[tube_id] = [Fp,Fq]
 
-        #return potential,pivot_dict
+
+        #return potential,force dict
         return None
+
+    def rotateTubes(self):
+        """This function rotates the tubes about a calculated point.
+        
+        Each intersect for a given tube generates a torque about the
+        intersection point. The getVanderPotential() fuction calculates
+        the total torque on a tube as well as the relative pivot point.
+        This function takes the direction of rotation and the pivot
+        and uses them to rotate the tobe by a small amount.
+        """
 
     def getSpringPotential(self):
         """Calculates the Spring Potential energy stored in the substate.
