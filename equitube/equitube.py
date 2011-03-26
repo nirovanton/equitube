@@ -38,6 +38,7 @@ class Equitube:
         variables, arguments = self._parseOptions(argv, parser)
 
         self._count = variables.count
+        self._springconst = variables.spring
         self._length = variables.length
 
     def _parseOptions(self, argv, parser):
@@ -50,23 +51,37 @@ class Equitube:
         parser.add_option('--count', '-c', default=50,
             help=''.join(count_help_list))
         length_help_list = [
-            "This option allows you to specity the length of the ",
+            "This option allows you to specify the length of the ",
             "field on which the nanotubes are oriented, the field ",
             "is square for simplicity."
             ]
         parser.add_option('--length', '-l', default=10,
             help=''.join(length_help_list))
-       
+        spring_help_list = [
+            "This option allos you to specify the strength of the ",
+            "spring constant and control the elasticity of the ",
+            "substrate the tubes are adhered to."
+            ]
+        parser.add_option('--spring', '-k', default=10,
+            help=''.join(spring_help_list))
+            
         return parser.parse_args()
-
+        
     def Run(self):
         try:
-            field = Field(self._length)
+            field = Field(self._length, self._springconst)
             field.addTubes(self._count)
-            field.calculateIntercepts()
-            tube_dict = field.getTubes()
-            field.getVanderPotential()
-        
+
+            """ This is pretty much the bulk of it.
+            """
+            #while vander > spring:
+            #    plot.paintCanvas()
+            #    field.calculateIntercepts()
+            #    field.getVanderPotential()
+            #    field.rotateTubes()
+            #    field.getSpringPotential()
+
+
         except EquitubeException, e:
             raise EquitubeException(e.get_message())
 

@@ -21,6 +21,7 @@
 
 from equitube.tube import Tube
 import numpy as np
+import random
 
 class Field:
     """An object for creating the field that holds the tube network.
@@ -30,9 +31,10 @@ class Field:
     tube object and calculate the energies of the entire field.
     """
 
-    def __init__(self,length):
+    def __init__(self,length,k):
         """Initializes the field
         """
+        self._k = k # spring constant
         self._startP = {}
         self._startQ = {}
         self._tubes = {}
@@ -46,8 +48,10 @@ class Field:
         """
        
         for x in range(number):
-            self._tubes[x] = Tube(self._length)
-            self._tubes[x].createLine()
+            self._tubes[x] = Tube()
+            m = random.uniform(-50,50)
+            cm = [random.uniform(0,self._length),random.uniform(0,self._length)]
+            self._tubes[x].createLine(m,cm)
             params = self._tubes[x].getParams()
             self._startP[x] = list()
             self._startP[x] = params['P'] 
@@ -114,10 +118,29 @@ class Field:
                     Fq += torque/Rq
                 
                 force_dict[tube_id] = [Fp,Fq]
+            # TODO Understand how to calculate this correctly.
+            vdw_potential = 42
 
+        return vdw_potential,force_dict
 
-        #return potential,force dict
-        return None
+    def getSpringPotential(self):
+        """Calculates the Spring Potential energy stored in the substate.
+       
+        This function will consider small changes in center and end
+        point position and use it to calculate the spring potential energy.
+        of the entire system.
+        """
+        ttl_spring_potential = 0.0
+
+        for tube_id in self._tubes.keys():
+            tube = self._tubes[tube_id].getParams()
+            p_dist = np.sqrt((tube['P'][0]-self._startP[tube_id][0])**2 + (tube['P'][1]-self._startP[tube_id][1])**2)
+            q_dist = np.sqrt((tube['Q'][0]-self._startQ[tube_id][0])**2 + (tube['Q'][1]-self._startQ[tube_id][1])**2)
+
+            # TODO Understand how to calculate this correctly.
+            ttl_spring_potential += .5*self._k*(p_dist+q_dist)**2 
+        
+        return ttl_spring_potential
 
     def rotateTubes(self):
         """This function rotates the tubes about a calculated point.
@@ -127,14 +150,6 @@ class Field:
         the total torque on a tube as well as the relative pivot point.
         This function takes the direction of rotation and the pivot
         and uses them to rotate the tobe by a small amount.
-        """
-
-    def getSpringPotential(self):
-        """Calculates the Spring Potential energy stored in the substate.
-        
-        This function will consider small changes in center and end
-        point position and use it to calculate the spring potential energy.
-        of the entire system.
         """
         return None
 

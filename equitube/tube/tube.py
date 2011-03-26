@@ -23,7 +23,7 @@ import numpy as np
 import random
 
 class Tube:
-    def __init__(self,length = False):
+    def __init__(self):
         """ Initializes a clean tube
         
         the length parameter specifies the dimensions
@@ -38,18 +38,23 @@ class Tube:
         self._l = None
         self._b = None
         self._theta = None
-        self._length = length
         self._neighbours = {}
         self._cm = [] #[Xcm,Ycm]
         self._P = [] #[Xp,Yp]
         self._Q = [] #[Xq,Yq]
 
-    def createLine(self):
-        """ Generating a random Line segment
+    def createLine(self,slope,center):
+        """ Generates a Line segment
+
+        This function generates the initial line segment, It also
+        modifies the variables that are based on slope and center
+        point after each iteration.
         """
-        self._m = random.uniform(-50,50)
-        self._l = random.uniform(3,10)
-        self._cm = [random.uniform(0,self._length),random.uniform(0,self._length)] 
+
+        if self._l == None:
+            self._l = random.uniform(3,10)
+        self._m = slope
+        self._cm = center 
         self._theta = np.arctan(self._m)
         self._b = self._cm[1] - self._m*self._cm[0]
 
@@ -87,25 +92,4 @@ class Tube:
         params = {'m':self._m,'l':self._l,'b':self._b,'cm':self._cm,'theta':self._theta,'P':self._P,'Q':self._Q,'neighbours':self._neighbours}
 
         return params
-
-    def setParams(self, paramList):
-        """ Change tube information.
-
-        this function accepts a list [param_name,new_value] and
-        applies the new value to the tube.  I.E. ['m',new_slope]
-        The only variables required to fully define the tube are
-        length, cm, and slope.
-        """
-              
-        if paramList[0] == 'm':
-            self._m = paramList[1]
-        elif paramList[0] == 'cm':
-            self._cm = paramList[1]
-        elif paramList[0] == 'l':
-            self._l = paramList[1]
-
-        return None
-
-
-
 
