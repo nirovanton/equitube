@@ -74,12 +74,15 @@ class Equitube:
 
             """ This is pretty much the bulk of it.
             """
+            tubes = field.getTubes()
+            for tube_id in tubes.keys():
+                bla = tubes[tube_id].getParams()['theta']
+                print bla
             #while vander > spring:
             #    plot.paintCanvas()
             #    field.calculateIntercepts()
-            #    field.getVanderPotential()
+            #    field.getPointforces()
             #    field.rotateTubes()
-            #    field.getSpringPotential()
 
 
         except EquitubeException, e:

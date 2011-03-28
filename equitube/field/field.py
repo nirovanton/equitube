@@ -69,16 +69,16 @@ class Field:
         """
         return self._tubes[index]
  
-    def getVanderPotential(self):
-        """Calculates the Van der Waals Potential for the system
+    def getPointForces(self):
+        """Calculates the Point forces for each tube in the system.
 
         The intersections for each tube apply a torque that acts to 
         rotate the tube about the intersection point. This function
         calculates the effective torque and pivot point using the
-        intersectons. It also approximates the total potential energy
-        of the torques across the system. The function returns the total
-        Van der Waals potential for the system as well as the information
-        needed to rotate the tubes about the calculated pivot points.
+        intersectons. It also factors in the displacement from the
+        original position and uses it to calculate the spring force acting
+        on the ends of each tube. This is factored into the torque
+        calculations as well.
         """
         
         force_dict = {}
@@ -89,8 +89,21 @@ class Field:
             P = self._tubes[tube_id].getParams()['P'] #P[x,y]
             Q = self._tubes[tube_id].getParams()['Q'] #Q[x,y]
             slope = self._tubes[tube_id].getParams()['m']
-            neighbour_dict = self._tubes[tube_id].getParams()['neighbours']
             
+            p_dist = np.sqrt((P[0]-self._startP[tube_id][0])**2 + (P[1]-self._startP[tube_id][1])**2)
+            q_dist = np.sqrt((Q[0]-self._startQ[tube_id][0])**2 + (Q[1]-self._startQ[tube_id][1])**2)
+
+            if self._startP[tube_id][1] > P[1]:
+                Fp += self._k*p_dist
+            else:
+                Fp += -1*self._k*p_dist
+
+            if self._startiQ[tube_id][1] > Q[1]:
+                Fq += self._k*q_dist
+            else:
+                Fq += -1*self._k*q_dist
+                        
+            neighbour_dict = self._tubes[tube_id].getParams()['neighbours']
             for index in neighbour_dict.keys():
                 xint = neighbour_dict[index][1]
                 yint = slope*xint + self._tubes[tube_id].getParams()['b']
@@ -118,31 +131,8 @@ class Field:
                     Fp += -1*torque/Rp
                     Fq += torque/Rq
                 
-                force_dict[tube_id] = [Fp,Fq]
-            # TODO Understand how to calculate this correctly.
-            vdw_potential = 42
-
-        return vdw_potential,force_dict
-
-    def getSpringPotential(self):
-        """Calculates the Spring Potential energy stored in the substate.
-       
-        This function will consider small changes in center and end
-        point position and use it to calculate the spring potential energy.
-        of the entire system.
-        """
-        
-        ttl_spring_potential = 0.0
-
-        for tube_id in self._tubes.keys():
-            tube = self._tubes[tube_id].getParams()
-            p_dist = np.sqrt((tube['P'][0]-self._startP[tube_id][0])**2 + (tube['P'][1]-self._startP[tube_id][1])**2)
-            q_dist = np.sqrt((tube['Q'][0]-self._startQ[tube_id][0])**2 + (tube['Q'][1]-self._startQ[tube_id][1])**2)
-
-            # TODO Understand how to calculate this correctly.
-            ttl_spring_potential += .5*self._k*(p_dist+q_dist)**2 
-        
-        return ttl_spring_potential
+            force_dict[tube_id] = [Fp,Fq]
+        return force_dict
 
     def rotateTubes(self, force_dict):
         """This function rotates the tubes about a calculated point.
@@ -226,9 +216,9 @@ class Field:
                     ycm = y_piv - d*np.cos(np.arctan(m))
                     self._tubes[tude_id].createLine(m,[xcm,ycm])
                     continue
-                elif Fp < Fq:
-                    if np.sqrt(Fp**2) < np.sqrt(Fq**2):
-
+            #    elif Fp < Fq:
+            #        if np.sqrt(Fp**2) < np.sqrt(Fq**2):
+            
             elif m < 0:
                 # M- P+ Q+
                 if Fp > 0 and Fq > 0:
