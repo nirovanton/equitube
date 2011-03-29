@@ -52,7 +52,7 @@ class Tube:
         """
 
         if self._l == None:
-            self._l = random.uniform(3,10)
+            self._l = random.uniform(2,5)
         self._m = slope
         self._cm = center 
         self._theta = np.arctan(self._m)

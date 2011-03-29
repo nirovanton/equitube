@@ -37,9 +37,10 @@ class Equitube:
         parser = optparse.OptionParser(usage=usage)
         variables, arguments = self._parseOptions(argv, parser)
 
-        self._count = variables.count
-        self._springconst = variables.spring
-        self._length = variables.length
+        self._count = int(variables.count)
+        self._springconst = int(variables.spring)
+        self._length = int(variables.length)
+        self._deltaslope = float(variables.deltaslope)
 
     def _parseOptions(self, argv, parser):
 
@@ -64,26 +65,30 @@ class Equitube:
             ]
         parser.add_option('--spring', '-k', default=10,
             help=''.join(spring_help_list))
-            
+        deltaslope_help_list = [
+            "This option allows you to specify the amount of change ",
+            "the slope undergoes at each iteration"
+            ]
+        parser.add_option('--deltaslope', '-m', default = 0.05,
+            help=''.join(deltaslope_help_list))
         return parser.parse_args()
         
     def Run(self):
         try:
-            field = Field(self._length, self._springconst)
+            field = Field(self._length, self._springconst, self._deltaslope)
             field.addTubes(self._count)
+            plot = Plot(self._length)
 
             """ This is pretty much the bulk of it.
             """
-            tubes = field.getTubes()
-            for tube_id in tubes.keys():
-                bla = tubes[tube_id].getParams()['theta']
-                print bla
-            #while vander > spring:
-            #    plot.paintCanvas()
-            #    field.calculateIntercepts()
-            #    field.getPointforces()
-            #    field.rotateTubes()
-
+            end = 0
+            while end < 55:
+                tubes = field.getTubes()
+                plot.plotField(tubes)
+                field.calculateIntercepts()
+                point_forces = field.getPointForces()
+                field.rotateTubes(point_forces)
+                end += 1
 
         except EquitubeException, e:
             raise EquitubeException(e.get_message())
