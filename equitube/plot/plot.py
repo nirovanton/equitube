@@ -47,7 +47,8 @@ class Plot:
         #plt.ion()
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        ax.axis([0,self._length,0,self._length])
+        #ax.axis([0,self._length,0,self._length])
+        ax.axis([0-.5*self._length, self._length+.5*self._length,0-.5*self._length,self._length+.5*self._length])
         for key in tube_dict.keys():
             P = tube_dict[key].getParams()['P']
             Q = tube_dict[key].getParams()['Q']

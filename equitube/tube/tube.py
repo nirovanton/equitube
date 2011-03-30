@@ -50,11 +50,13 @@ class Tube:
         modifies the variables that are based on slope and center
         point after each iteration.
         """
-
+       
+        
         if self._l == None:
             self._l = random.uniform(2,5)
         self._m = slope
         self._cm = center 
+        #self._neighbours = {}
         self._theta = np.arctan(self._m)
         self._b = self._cm[1] - self._m*self._cm[0]
 

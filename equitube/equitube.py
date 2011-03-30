@@ -84,9 +84,16 @@ class Equitube:
             end = 0
             while end < 55:
                 tubes = field.getTubes()
-                plot.plotField(tubes)
                 field.calculateIntercepts()
+
+                P = tubes[0].getParams()['P']
+                neighbours = tubes[0].getParams()['neighbours'].keys()
+                for dex in neighbors  
+                print tubes[0].getParams()['m'], len(tubes[0].getParams()['neighbours'].keys()), "(",P[0],",",P[1],")"
+
+
                 point_forces = field.getPointForces()
+                plot.plotField(tubes)
                 field.rotateTubes(point_forces)
                 end += 1
 
