@@ -56,7 +56,7 @@ class Tube:
             self._l = random.uniform(2,5)
         self._m = slope
         self._cm = center 
-        #self._neighbours = {}
+        self._neighbours = {}
         self._theta = np.arctan(self._m)
         self._b = self._cm[1] - self._m*self._cm[0]
 

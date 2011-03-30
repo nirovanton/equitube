@@ -25,7 +25,7 @@ except:
     print >> sys.stderr, "Could not load matplotlib.  Perhaps, install matplotlib?"
 
 import optparse
-
+import numpy as np
 from field import Field
 from plot import Plot
 from tube import Tube
@@ -38,7 +38,7 @@ class Equitube:
         variables, arguments = self._parseOptions(argv, parser)
 
         self._count = int(variables.count)
-        self._springconst = int(variables.spring)
+        self._springconst = float(variables.spring)
         self._length = int(variables.length)
         self._deltaslope = float(variables.deltaslope)
 
@@ -63,7 +63,7 @@ class Equitube:
             "spring constant and control the elasticity of the ",
             "substrate the tubes are adhered to."
             ]
-        parser.add_option('--spring', '-k', default=10,
+        parser.add_option('--spring', '-k', default=.1,
             help=''.join(spring_help_list))
         deltaslope_help_list = [
             "This option allows you to specify the amount of change ",
@@ -76,23 +76,27 @@ class Equitube:
     def Run(self):
         try:
             field = Field(self._length, self._springconst, self._deltaslope)
-            field.addTubes(self._count)
             plot = Plot(self._length)
-
-            """ This is pretty much the bulk of it.
-            """
+            
+            
+            field.addTubes(self._count)
+         
             end = 0
             while end < 55:
                 tubes = field.getTubes()
                 field.calculateIntercepts()
 
                 P = tubes[0].getParams()['P']
-                neighbours = tubes[0].getParams()['neighbours'].keys()
-                for dex in neighbors  
-                print tubes[0].getParams()['m'], len(tubes[0].getParams()['neighbours'].keys()), "(",P[0],",",P[1],")"
+                neighbours = tubes[0].getParams()['neighbours']
 
-
+                print "*  ",tubes[0].getParams()['m'], len(neighbours.keys()), "(",P[0],",",P[1],")"
                 point_forces = field.getPointForces()
+                print "Fp:",point_forces[0][0],"  Fq:",point_forces[0][1]
+                for hit in neighbours.keys():
+                    print hit, neighbours[hit][0]*180/np.pi, neighbours[hit][1]
+                  
+
+                point_forces
                 plot.plotField(tubes)
                 field.rotateTubes(point_forces)
                 end += 1

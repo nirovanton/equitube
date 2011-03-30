@@ -65,11 +65,6 @@ class Field:
         """
         return self._tubes   
    
-    def getTube(self,index):
-        """Return the tube assocaited with the passed index
-        """
-        return self._tubes[index]
- 
     def getPointForces(self):
         """Calculates the Point forces for each tube in the system.
 
@@ -125,14 +120,16 @@ class Field:
                     if phi > np.pi/2:
                         Fp += -1*torque/Rp
                         Fq += torque/Rq
-                    Fp += torque/Rp
-                    Fq += -1*torque/Rq
+                    elif phi < np.pi/2:    
+                        Fp += torque/Rp
+                        Fq += -1*torque/Rq
                 elif slope < slope2:
                     if phi > np.pi/2:
                         Fp += torque/Rp
                         Fq += -1*torque/Rq
-                    Fp += -1*torque/Rp
-                    Fq += torque/Rq
+                    elif phi < np.pi/2:
+                        Fp += -1*torque/Rp
+                        Fq += torque/Rq
                 
             force_dict[tube_id] = [Fp,Fq]
         return force_dict
