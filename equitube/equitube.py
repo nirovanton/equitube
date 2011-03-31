@@ -82,7 +82,7 @@ class Equitube:
             field.addTubes(self._count)
          
             end = 0
-            while end < 60:
+            while end < 6000:
                 tubes = field.getTubes()
                 field.calculateIntercepts()
                 point_forces = field.getPointForces()
@@ -96,6 +96,12 @@ class Equitube:
                     cm = params['cm']
                     neb = params['neighbours']
                     ns = neb.keys()
+                    print key,"\t::\t",cm
+                    if cm[0] > 10 or cm[1] > 10:
+                        print key 
+                        break
+                        
+                """
                     print key,"~",ns,"\tm: ",m,"\tcm: ",cm
                     print "-----------------"
                 print "=-=-=-=-=-=-=-=-=-=-=-=-"
@@ -112,12 +118,12 @@ class Equitube:
                     print "ID:",key, "  Fp:",point_forces[key][0],"  Fq:",point_forces[key][1]
                 #for hit in neighbours.keys():
                 #    print hit, neighbours[hit][0]*180/np.pi, neighbours[hit][1]
-                  
-
-                plot.plotField(tubes)
+                """  
+                #if end % 5 == 0:
+                #    plot.plotField(tubes)
                 field.rotateTubes(point_forces)
                 end += 1
-
+                
         except EquitubeException, e:
             raise EquitubeException(e.get_message())
 
