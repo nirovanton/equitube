@@ -82,21 +82,38 @@ class Equitube:
             field.addTubes(self._count)
          
             end = 0
-            while end < 55:
+            while end < 60:
                 tubes = field.getTubes()
                 field.calculateIntercepts()
-
-                P = tubes[0].getParams()['P']
-                neighbours = tubes[0].getParams()['neighbours']
-
-                print "*  ",tubes[0].getParams()['m'], len(neighbours.keys()), "(",P[0],",",P[1],")"
                 point_forces = field.getPointForces()
-                print "Fp:",point_forces[0][0],"  Fq:",point_forces[0][1]
-                for hit in neighbours.keys():
-                    print hit, neighbours[hit][0]*180/np.pi, neighbours[hit][1]
+                print "==================================="
+                print "ITERATION #", end
+                print "==================================="
+                for key in tubes.keys():
+                    params = tubes[key].getParams()
+                    m = params['m']
+                    b = params['b']
+                    cm = params['cm']
+                    neb = params['neighbours']
+                    ns = neb.keys()
+                    print key,"~",ns,"\tm: ",m,"\tcm: ",cm
+                    print "-----------------"
+                print "=-=-=-=-=-=-=-=-=-=-=-=-"
+                for key in tubes.keys():
+                    params = tubes[key].getParams()
+                    m = params['m']
+                    b = params['b']
+                    neb = params['neighbours']
+                    ns = neb.keys()
+                    for hit in ns:
+                        print "ID:",key,"~",hit,neb[hit][0]*180/np.pi,neb[hit][1],m*neb[hit][1]+b
+                print "=-=-=-=-=-=-=-=-=-=-=-=-"
+                for key in point_forces.keys():
+                    print "ID:",key, "  Fp:",point_forces[key][0],"  Fq:",point_forces[key][1]
+                #for hit in neighbours.keys():
+                #    print hit, neighbours[hit][0]*180/np.pi, neighbours[hit][1]
                   
 
-                point_forces
                 plot.plotField(tubes)
                 field.rotateTubes(point_forces)
                 end += 1

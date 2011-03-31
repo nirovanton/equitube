@@ -50,8 +50,7 @@ class Tube:
         modifies the variables that are based on slope and center
         point after each iteration.
         """
-       
-        
+
         if self._l == None:
             self._l = random.uniform(2,5)
         self._m = slope
@@ -60,10 +59,10 @@ class Tube:
         self._theta = np.arctan(self._m)
         self._b = self._cm[1] - self._m*self._cm[0]
 
-        xmax = self._cm[0] + np.sqrt((self._l*np.cos(self._theta))**2)
-        xmin = self._cm[0] - np.sqrt((self._l*np.cos(self._theta))**2)
-        ymax = self._cm[1] + np.sqrt((self._l*np.sin(self._theta))**2)
-        ymin = self._cm[1] - np.sqrt((self._l*np.sin(self._theta))**2)
+        xmax = self._cm[0] + abs((self._l*np.cos(self._theta)))
+        xmin = self._cm[0] - abs((self._l*np.cos(self._theta)))
+        ymax = self._cm[1] + abs((self._l*np.sin(self._theta)))
+        ymin = self._cm[1] - abs((self._l*np.sin(self._theta)))
         if self._m <= 0:
             self._P = [xmin,ymax]
             self._Q = [xmax,ymin]

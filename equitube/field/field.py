@@ -85,7 +85,7 @@ class Field:
             P = self._tubes[tube_id].getParams()['P'] #P[x,y]
             Q = self._tubes[tube_id].getParams()['Q'] #Q[x,y]
             slope = self._tubes[tube_id].getParams()['m']
-            
+            """
             p_dist = np.sqrt((P[0]-self._startP[tube_id][0])**2 \
                            + (P[1]-self._startP[tube_id][1])**2)
             q_dist = np.sqrt((Q[0]-self._startQ[tube_id][0])**2 \
@@ -100,7 +100,7 @@ class Field:
                 Fq += self._k*q_dist
             else:
                 Fq += -1*self._k*q_dist
-                        
+            """            
             neighbour_dict = self._tubes[tube_id].getParams()['neighbours']
             for index in neighbour_dict.keys():
                 xint = neighbour_dict[index][1]
@@ -152,9 +152,12 @@ class Field:
             l = self._tubes[tube_id].getParams()['l']
             m = self._tubes[tube_id].getParams()['m']
             cm = self._tubes[tube_id].getParams()['cm']
-            theta = np.sqrt(self._tubes[tube_id].getParams()['theta']**2)
+            theta = abs(self._tubes[tube_id].getParams()['theta'])
             Fp = force_dict[tube_id][0]
             Fq = force_dict[tube_id][1]
+
+            if Fp == 0 and Fq == 0:
+                continue
             
             if m > 0:
                 # M+ P+ Q+
@@ -162,62 +165,66 @@ class Field:
                     if Fp < Fq:
                         d = ((Fq+Fp)/(Fq-Fp))*l
                         m += self._dm
-                        x_piv = cm[0] - d*np.sin(theta)
-                        y_piv = cm[1] - d*np.cos(theta)
-                        xcm = x_piv + d*np.sin(np.arctan(m))
-                        ycm = y_piv + d*np.cos(np.arctan(m))
+                        x_piv = cm[0] - d*np.cos(theta)
+                        y_piv = cm[1] - d*np.sin(theta)
+                        xcm = x_piv + d*np.cos(np.arctan(m))
+                        ycm = y_piv + d*np.sin(np.arctan(m))
                         self._tubes[tube_id].createLine(m,[xcm,ycm])
                         continue    
                     elif Fp > Fq:
                         d = ((Fp+Fq)/(Fp-Fq))*l
                         m += -1*self._dm
-                        x_piv = cm[0] + d*np.sin(theta)
-                        y_piv = cm[1] + d*np.cos(theta)
-                        xcm = x_piv - d*np.sin(np.arctan(m))
-                        ycm = y_piv - d*np.cos(np.arctan(m))
+                        x_piv = cm[0] + d*np.cos(theta)
+                        y_piv = cm[1] + d*np.sin(theta)
+                        xcm = x_piv - d*np.cos(np.arctan(m))
+                        ycm = y_piv - d*np.sin(np.arctan(m))
                         self._tubes[tube_id].createLine(m,[xcm,ycm])
                         continue
                 # M+ P- Q-
                 elif Fp < 0 and Fq < 0:
                     if Fp < Fq:
-                        d = ((Fq+Fp)/(Fq-Fp))*l
+                        d = ((abs(Fq)+abs(Fp))/(abs(Fq)-abs(Fp)))*l
                         m += self._dm
-                        x_piv = cm[0] + d*np.sin(theta)
-                        y_piv = cm[1] + d*np.cos(theta)
-                        xcm = x_piv - d*np.sin(np.arctan(m))
-                        ycm = y_piv - d*np.cos(np.arctan(m))
+                        x_piv = cm[0] + d*np.cos(theta)
+                        y_piv = cm[1] + d*np.sin(theta)
+                        xcm = x_piv - d*np.cos(np.arctan(m))
+                        ycm = y_piv - d*np.sin(np.arctan(m))
                         self._tubes[tube_id].createLine(m,[xcm,ycm])
                         continue
                     elif Fp > Fq:
-                        d = ((Fp+Fq)/(Fp-Fq))*l
+                        d = ((abs(Fp)+abs(Fq))/(abs(Fp)-abs(Fq)))*l
                         m += -1*self._dm
-                        x_piv = cm[0] - d*np.sin(theta)
-                        y_piv = cm[1] - d*np.cos(theta)
-                        xcm = x_piv + d*np.sin(np.arctan(m))
-                        ycm = y_piv + d*np.cos(np.arctan(m))
+                        x_piv = cm[0] - d*np.cos(theta)
+                        y_piv = cm[1] - d*np.sin(theta)
+                        xcm = x_piv + d*np.cos(np.arctan(m))
+                        ycm = y_piv + d*np.sin(np.arctan(m))
                         self._tubes[tube_id].createLine(m,[xcm,ycm])
                         continue
                 # M+ P+/- Q+/-
-                elif np.sqrt(Fp**2) < np.sqrt(Fq**2):
-                    d = ((Fq-Fp)/(Fq+Fq))*l
-                    m += -1*self._dm
-                    x_piv = cm[0] - d*np.sin(theta)
-                    y_piv = cm[1] - d*np.cos(theta)
-                    xcm = x_piv + d*np.sin(np.arctan(m))
-                    ycm = y_piv + d*np.cos(np.arctan(m))
+                elif abs(Fp) < abs(Fq):
+                    d = ((abs(Fq)-abs(Fp))/(abs(Fq)+abs(Fp)))*l
+                    if Fp > 0:
+                        m += -1*self._dm
+                    elif Fp < 0:
+                        m += self._dm
+                    x_piv = cm[0] - d*np.cos(theta)
+                    y_piv = cm[1] - d*np.sin(theta)
+                    xcm = x_piv + d*np.cos(np.arctan(m))
+                    ycm = y_piv + d*np.sin(np.arctan(m))
                     self._tubes[tube_id].createLine(m,[xcm,ycm])
                     continue
-                elif np.sqrt(Fp**2) > np.sqrt(Fq**2):
-                    d = ((Fp-Fq)/(Fp+Fq))*l
-                    m += -1*self._dm
-                    x_piv = cm[0] + d*np.sin(theta)
-                    y_piv = cm[1] + d*np.cos(theta)
-                    xcm = x_piv - d*np.sin(np.arctan(m))
-                    ycm = y_piv - d*np.cos(np.arctan(m))
+                elif abs(Fp) > abs(Fq):
+                    d = ((abs(Fp)-abs(Fq))/(abs(Fp)+abs(Fq)))*l
+                    if Fp > 0:
+                        m += -1*self._dm
+                    elif Fp < 0:
+                        m += self._dm
+                    x_piv = cm[0] + d*np.cos(theta)
+                    y_piv = cm[1] + d*np.sin(theta)
+                    xcm = x_piv - d*np.cos(np.arctan(m))
+                    ycm = y_piv - d*np.sin(np.arctan(m))
                     self._tubes[tube_id].createLine(m,[xcm,ycm])
                     continue
-            #    elif Fp < Fq:
-            #        if np.sqrt(Fp**2) < np.sqrt(Fq**2):
             
             elif m < 0:
                 # M- P+ Q+
@@ -225,58 +232,64 @@ class Field:
                     if Fp < Fq:
                         d = ((Fq+Fp)/(Fq-Fp))*l
                         m += self._dm
-                        x_piv = cm[0] - d*np.sin(theta)
-                        y_piv = cm[1] + d*np.cos(theta)
-                        xcm = x_piv + d*np.sin(np.arctan(m))
-                        ycm = y_piv - d*np.cos(np.arctan(m))
+                        x_piv = cm[0] - d*np.cos(theta)
+                        y_piv = cm[1] + d*np.sin(theta)
+                        xcm = x_piv + d*np.cos(np.arctan(abs(m)))
+                        ycm = y_piv - d*np.sin(np.arctan(abs(m)))
                         self._tubes[tube_id].createLine(m,[xcm,ycm])
                         continue
                     elif Fp > Fq:
                         d = ((Fp+Fq)/(Fp-Fq))*l
                         m += -1*self._dm
-                        x_piv = cm[0] + d*np.sin(theta)
-                        y_piv = cm[1] - d*np.cos(theta)
-                        xcm = x_piv - d*np.sin(np.arctan(m))
-                        ycm = y_piv + d*np.cos(np.arctan(m))
+                        x_piv = cm[0] + d*np.cos(theta)
+                        y_piv = cm[1] - d*np.sin(theta)
+                        xcm = x_piv - d*np.cos(np.arctan(abs(m)))
+                        ycm = y_piv + d*np.sin(np.arctan(abs(m)))
                         self._tubes[tube_id].createLine(m,[xcm,ycm])
                         continue
                 # M- P- Q-
                 if Fp < 0 and Fq < 0:
                     if Fp < Fq:
-                        d = ((Fq+Fp)/(Fq-Fp))*l
+                        d = ((abs(Fq)+abs(Fp))/(abs(Fq)-abs(Fp)))*l
                         m += self._dm
-                        x_piv = cm[0] + d*np.sin(theta)
-                        y_piv = cm[1] - d*np.cos(theta)
-                        xcm = x_piv - d*np.sin(np.arctan(m))
-                        ycm = y_piv + d*np.cos(np.arctan(m))
+                        x_piv = cm[0] + d*np.cos(theta)
+                        y_piv = cm[1] - d*np.sin(theta)
+                        xcm = x_piv - d*np.cos(np.arctan(abs(m)))
+                        ycm = y_piv + d*np.sin(np.arctan(abs(m)))
                         self._tubes[tube_id].createLine(m,[xcm,ycm])
                         continue
                     elif Fp > Fq:
-                        d = ((Fp+Fq)/(Fp-Fq))*l
+                        d = ((abs(Fp)+abs(Fq))/(abs(Fp)-abs(Fq)))*l
                         m += -1*self._dm
-                        x_piv = cm[0] - d*np.sin(theta)
-                        y_piv = cm[1] + d*np.cos(theta)
-                        xcm = x_piv + d*np.sin(np.arctan(m))
-                        ycm = y_piv - d*np.cos(np.arctan(m))
+                        x_piv = cm[0] - d*np.cos(theta)
+                        y_piv = cm[1] + d*np.sin(theta)
+                        xcm = x_piv + d*np.cos(np.arctan(abs(m)))
+                        ycm = y_piv - d*np.sin(np.arctan(abs(m)))
                         self._tubes[tube_id].createLine(m,[xcm,ycm])
                         continue
                 # M- P+/- Q+/-
-                elif np.sqrt(Fp**2) < np.sqrt(Fq**2):
-                    d = ((Fq-Fp)/(Fq+Fq))*l
-                    m += self._dm
-                    x_piv = cm[0] - d*np.sin(theta)
-                    y_piv = cm[1] + d*np.cos(theta)
-                    xcm = x_piv + d*np.sin(np.arctan(m))
-                    ycm = y_piv - d*np.cos(np.arctan(m))
+                elif abs(Fp) < abs(Fq):
+                    d = ((abs(Fq)-abs(Fp))/(abs(Fq)+abs(Fp)))*l
+                    if Fp > 0: 
+                        m += -1*self._dm
+                    elif Fp < 0:
+                        m += self._dm
+                    x_piv = cm[0] - d*np.cos(theta)
+                    y_piv = cm[1] + d*np.sin(theta)
+                    xcm = x_piv + d*np.cos(np.arctan(abs(m)))
+                    ycm = y_piv - d*np.sin(np.arctan(abs(m)))
                     self._tubes[tube_id].createLine(m,[xcm,ycm])
                     continue
-                elif np.sqrt(Fp**2) > np.sqrt(Fq**2):
-                    d = ((Fp-Fq)/(Fp+Fq))*l
-                    m += -1*self._dm
-                    x_piv = cm[0] + d*np.sin(theta)
-                    y_piv = cm[1] - d*np.cos(theta)
-                    xcm = x_piv - d*np.sin(np.arctan(m))
-                    ycm = y_piv + d*np.cos(np.arctan(m))
+                elif abs(Fp) > abs(Fq):
+                    d = ((abs(Fp)-abs(Fq))/(abs(Fp)+abs(Fq)))*l
+                    if Fp > 0: 
+                        m += -1*self._dm
+                    elif Fp < 0:
+                        m += self._dm
+                    x_piv = cm[0] + d*np.cos(theta)
+                    y_piv = cm[1] - d*np.sin(theta)
+                    xcm = x_piv - d*np.cos(np.arctan(abs(m)))
+                    ycm = y_piv + d*np.sin(np.arctan(abs(m)))
                     self._tubes[tube_id].createLine(m,[xcm,ycm])
                     continue
         return None
