@@ -152,16 +152,15 @@ class Field:
         l = 1/2 length of tube
         d = distance from pivot to center
         """
-        # TODO Ponder a more graceful method.
+        # TODO Ponder a more graceful method.. 'cuz damn.
         for tube_id in self._tubes.keys():
-            
             l = self._tubes[tube_id].getParams()['l']
             m = self._tubes[tube_id].getParams()['m']
             cm = self._tubes[tube_id].getParams()['cm']
             theta = abs(self._tubes[tube_id].getParams()['theta'])
             Fp = force_dict[tube_id][0]
             Fq = force_dict[tube_id][1]
-
+            #print tube_id , Fp,Fq, m
             if Fp == 0 and Fq == 0:
                 continue
             
@@ -342,7 +341,7 @@ class Field:
         count = 0
         if self._tubes[index].getParams()['Q'][0] >= self._length:
             count += 1
-            print prev_tubes, round(self._tubes[index].getParams()['Q'][0],4)
+            #print prev_tubes, round(self._tubes[index].getParams()['Q'][0],4)
         for key in key_list:
             if prev_tubes.count(key) > 0:
                 continue
