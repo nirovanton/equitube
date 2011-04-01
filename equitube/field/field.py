@@ -22,13 +22,14 @@
 from equitube.tube import Tube
 import numpy as np
 import random
+import time
 
 class Field:
     """An object for creating the field that holds the tube network.
     
     The Field class only keeps track of the different instances of
-    the tube objects. It also uses this list to gain access to each
-    tube object and calculate the energies of the entire field.
+    the tube objects. It also houses several methods to calculate
+    intercepts, point forces, traversal paths, and rotate the tubes.
     """
 
     def __init__(self,length,k,dm):
@@ -45,12 +46,17 @@ class Field:
         """This function adds a tube to the system 
 
         This function will initialize another tube object and will add it
-        to the list of active tubes.
+        to the list of active tubes. The non-random nature of the computer 
+        generated random #s is evident here as many tubes share a common 
+        approximate length and position. the time.sleep statements are my 
+        feeble attempt to increase the randomness of the generated lines.
         """
        
         for x in range(number):
+            time.sleep(random.uniform(.001,0))
             self._tubes[x] = Tube()
-            m = random.uniform(-10,10)
+            m = random.uniform(-7,7)
+            time.sleep(random.uniform(.001,0))
             cm = [random.uniform(0,self._length-.5),random.uniform(0,self._length-.5)]
             self._tubes[x].createLine(m,cm)
             params = self._tubes[x].getParams()
@@ -319,4 +325,27 @@ class Field:
                         angle = tube2['theta'] - tube1['theta']
                     self._tubes[dex1].addNeighbours(dex2,angle,x)
         return None
+    
+    def traverseNeighbours(self, index, prev_tubes):
+        """Calculates the total number of paths from left to right.
+
+        All tubes with ( P[0] <= 0 ) intersect the left side of
+        the field. These are the tubes initially passed to this
+        function. This function then gathers neighbours and pass
+        them recursively. prev_tubes is a list of tube ID #'s. 
+        It keeps track of the previous tubes along a given path of
+        recursion. It prevents backtracking.
+        """
+        prev_tubes.append(index)
+        neighbours = self._tubes[index].getParams()['neighbours']
+        key_list = neighbours.keys()
+        count = 0
+        if self._tubes[index].getParams()['Q'][0] >= self._length:
+            count += 1
+            print prev_tubes, round(self._tubes[index].getParams()['Q'][0],4)
+        for key in key_list:
+            if prev_tubes.count(key) > 0:
+                continue
+            count += self.traverseNeighbours(key,prev_tubes)
+        return count
 

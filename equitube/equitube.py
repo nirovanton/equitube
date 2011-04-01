@@ -63,13 +63,13 @@ class Equitube:
             "spring constant and control the elasticity of the ",
             "substrate the tubes are adhered to."
             ]
-        parser.add_option('--spring', '-k', default=.1,
+        parser.add_option('--spring', '-k', default=.0001,
             help=''.join(spring_help_list))
         deltaslope_help_list = [
             "This option allows you to specify the amount of change ",
             "the slope undergoes at each iteration"
             ]
-        parser.add_option('--deltaslope', '-m', default = 0.05,
+        parser.add_option('--deltaslope', '-m', default = 0.0001,
             help=''.join(deltaslope_help_list))
         return parser.parse_args()
         
@@ -77,10 +77,19 @@ class Equitube:
         try:
             field = Field(self._length, self._springconst, self._deltaslope)
             plot = Plot(self._length)
-            
-            
             field.addTubes(self._count)
-         
+            tubes = field.getTubes()
+            traverses = 0
+            field.calculateIntercepts()
+            for index in tubes.keys():
+                 if tubes[index].getParams()['P'][0] <= 0:
+                     traverses += field.traverseNeighbours(index,[])
+            print traverses
+
+            
+            # This is just some debugging stuff I currently find
+            # usefull...
+            """          
             end = 0
             while end < 6000:
                 tubes = field.getTubes()
@@ -100,8 +109,8 @@ class Equitube:
                     if cm[0] > 10 or cm[1] > 10:
                         print key 
                         break
-                        
-                """
+                  
+            
                     print key,"~",ns,"\tm: ",m,"\tcm: ",cm
                     print "-----------------"
                 print "=-=-=-=-=-=-=-=-=-=-=-=-"
@@ -118,11 +127,11 @@ class Equitube:
                     print "ID:",key, "  Fp:",point_forces[key][0],"  Fq:",point_forces[key][1]
                 #for hit in neighbours.keys():
                 #    print hit, neighbours[hit][0]*180/np.pi, neighbours[hit][1]
-                """  
+            """  
                 #if end % 5 == 0:
-                #    plot.plotField(tubes)
-                field.rotateTubes(point_forces)
-                end += 1
+            plot.plotField(tubes)
+                #field.rotateTubes(point_forces)
+                #end += 1
                 
         except EquitubeException, e:
             raise EquitubeException(e.get_message())
