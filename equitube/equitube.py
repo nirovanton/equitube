@@ -79,27 +79,37 @@ class Equitube:
             field.addTubes(self._count)
             plot = Plot(self._length)
             tubes = field.getTubes()
+            
+            # Debugging code
+            start = []
+            stop =[]
+            for key in field.getTubes().keys():
+                if field.getTubes()[key].getParams()['P'][0] <= 0:
+                    start.append(key),","
+                if field.getTubes()[key].getParams()['Q'][0] >= 10:
+                    stop.append(key)
+            print "Starting Tubes:",start
+            print "Stopping Tubes:",stop
+            print "------------------------------------------"
 
             end = 0
             while end < 1:
                 field.calculateIntercepts()
                 point_forces = field.getPointForces()
-                traverses = 0
                 
+                for key in field.getTubes().keys():
+                    print key,":",field.getTubes()[key].getParams()['neighbours'].keys()
+                print "=================================="
+                traverses = 0
                 for index in tubes.keys():
                     if tubes[index].getParams()['P'][0] <= 0:
+                        print index
                         traverses += field.traverseNeighbours(index,[])
-                print traverses, len(field.getPaths())
-                for path in field.getPaths().keys():
-                    print "dict * ",field.getPaths()[path]                    
-                #field.resetPaths()
-                #print len(field.getPaths())
+                print traverses
 
-
-                
                 #if end % 1 == 0:
-                plot.plotField(tubes)
-                field.rotateTubes(point_forces)
+                #plot.plotField(tubes)
+                #field.rotateTubes(point_forces)
                 end += 1
                 
         except EquitubeException, e:

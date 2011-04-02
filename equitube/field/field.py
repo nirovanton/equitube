@@ -337,24 +337,16 @@ class Field:
         recursion. It prevents backtracking.
         """
         prev_tubes.append(index)
+        print prev_tubes
+
         neighbours = self._tubes[index].getParams()['neighbours']
         neighbour_key_list = neighbours.keys()
         count = 0
         if self._tubes[index].getParams()['Q'][0] >= self._length:
-            dex = len(self._paths)
-            self._paths[dex] = list()
-            self._paths[dex] = prev_tubes
-            print index, self._tubes[index].getParams()['Q'][0], prev_tubes 
             count += 1
+            print prev_tubes
         for key in neighbour_key_list:
             if prev_tubes.count(key) > 0:
                 continue
             count += self.traverseNeighbours(key,prev_tubes)
         return count
-
-    def getPaths(self):
-        return self._paths
-
-    def resetPaths(self):
-        self._paths = []
-        return None
