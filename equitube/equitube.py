@@ -81,7 +81,7 @@ class Equitube:
             tubes = field.getTubes()
 
             end = 0
-            while end < 6000:
+            while end < 1:
                 field.calculateIntercepts()
                 point_forces = field.getPointForces()
                 traverses = 0
@@ -89,10 +89,16 @@ class Equitube:
                 for index in tubes.keys():
                     if tubes[index].getParams()['P'][0] <= 0:
                         traverses += field.traverseNeighbours(index,[])
-                print end,"\t",traverses
+                print traverses, len(field.getPaths())
+                for path in field.getPaths():
+                    print path,"::",len(path)
+                field.resetPaths()
+                print len(field.getPaths())
+
+
                 
                 #if end % 1 == 0:
-                    #plot.plotField(tubes)
+                #    plot.plotField(tubes)
                 field.rotateTubes(point_forces)
                 end += 1
                 
