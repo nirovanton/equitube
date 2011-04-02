@@ -90,15 +90,15 @@ class Equitube:
                     if tubes[index].getParams()['P'][0] <= 0:
                         traverses += field.traverseNeighbours(index,[])
                 print traverses, len(field.getPaths())
-                for path in field.getPaths():
-                    print path,"::",len(path)
-                field.resetPaths()
-                print len(field.getPaths())
+                for path in field.getPaths().keys():
+                    print "dict * ",field.getPaths()[path]                    
+                #field.resetPaths()
+                #print len(field.getPaths())
 
 
                 
                 #if end % 1 == 0:
-                #    plot.plotField(tubes)
+                plot.plotField(tubes)
                 field.rotateTubes(point_forces)
                 end += 1
                 

@@ -40,7 +40,7 @@ class Field:
         self._startP = {}
         self._startQ = {}
         self._tubes = {}
-        self._paths = []
+        self._paths = {}
         self._length = length
 
     def addTubes(self, number = 1):
@@ -338,13 +338,15 @@ class Field:
         """
         prev_tubes.append(index)
         neighbours = self._tubes[index].getParams()['neighbours']
-        key_list = neighbours.keys()
+        neighbour_key_list = neighbours.keys()
         count = 0
         if self._tubes[index].getParams()['Q'][0] >= self._length:
-            self._paths.append(prev_tubes)
-            print prev_tubes 
+            dex = len(self._paths)
+            self._paths[dex] = list()
+            self._paths[dex] = prev_tubes
+            print index, self._tubes[index].getParams()['Q'][0], prev_tubes 
             count += 1
-        for key in key_list:
+        for key in neighbour_key_list:
             if prev_tubes.count(key) > 0:
                 continue
             count += self.traverseNeighbours(key,prev_tubes)
