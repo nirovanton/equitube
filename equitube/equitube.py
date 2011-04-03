@@ -93,6 +93,7 @@ class Equitube:
             print "Stopping Tubes:",stop
             print "------------------------------------------"
             #time.sleep(10)
+            plot.plotField(tubes)
             end = 0
             while end < 1:
                 field.calculateIntercepts()
