@@ -108,11 +108,11 @@ class Field:
             else:
                 Fq += -1*self._k*q_dist
                         
-            neighbour_dict = self._tubes[tube_id].getParams()['neighbours']
-            for index in neighbour_dict.keys():
-                xint = neighbour_dict[index][1]
+            neighbor_dict = self._tubes[tube_id].getParams()['neighbors']
+            for index in neighbor_dict.keys():
+                xint = neighbor_dict[index][1]
                 yint = slope*xint + self._tubes[tube_id].getParams()['b']
-                phi = neighbour_dict[index][0]
+                phi = neighbor_dict[index][0]
                 torque = 1/np.sin(phi)-1
                 slope2 = self._tubes[index].getParams()['m']
                 
@@ -323,30 +323,34 @@ class Field:
                         angle = tube1['theta'] - tube2['theta']
                     else:
                         angle = tube2['theta'] - tube1['theta']
-                    self._tubes[dex1].addNeighbours(dex2,angle,x)
+                    self._tubes[dex1].addNeighbors(dex2,angle,x)
         return None
     
-    def traverseNeighbours(self, index, prev_tubes):
+    def traverseNeighbors(self,index,neighbor_dict,leaves,prev_tubes):
         """Calculates the total number of paths from left to right.
 
         All tubes with ( P[0] <= 0 ) intersect the left side of
         the field. These are the tubes initially passed to this
-        function. This function then gathers neighbours and pass
+        function. This function then gathers neighbors and pass
         them recursively. prev_tubes is a list of tube ID #'s. 
         It keeps track of the previous tubes along a given path of
         recursion. It prevents backtracking.
         """
-        prev_tubes.append(index)
-        print prev_tubes
-
-        neighbours = self._tubes[index].getParams()['neighbours']
-        neighbour_key_list = neighbours.keys()
+        me = (index,)
+        test = prev_tubes + me
+        #print test
+        #prev_tubes.append(index)
+        #print prev_tubes
+        ##neighbors = self._tubes[index].getParams()['neighbors']
+        ##neighbor_key_list = neighbors.keys()
         count = 0
-        if self._tubes[index].getParams()['Q'][0] >= self._length:
+        ##if self._tubes[index].getParams()['Q'][0] >= self._length:
+        if leaves.count(index) == 1:
             count += 1
-            print prev_tubes
-        for key in neighbour_key_list:
+            print "HIT!",test
+        ##for key in neighbor_key_list:
+        for key in neighbor_dict[index]:
             if prev_tubes.count(key) > 0:
                 continue
-            count += self.traverseNeighbours(key,prev_tubes)
+            count += self.traverseNeighbors(key,neighbor_dict,leaves,test)
         return count

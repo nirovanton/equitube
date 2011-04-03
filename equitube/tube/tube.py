@@ -38,7 +38,7 @@ class Tube:
         self._l = None
         self._b = None
         self._theta = None
-        self._neighbours = {}
+        self._neighbors = {}
         self._cm = [] #[Xcm,Ycm]
         self._P = [] #[Xp,Yp]
         self._Q = [] #[Xq,Yq]
@@ -55,7 +55,7 @@ class Tube:
             self._l = random.uniform(2,5)
         self._m = slope
         self._cm = center 
-        self._neighbours = {}
+        self._neighbors = {}
         self._theta = np.arctan(self._m)
         self._b = self._cm[1] - self._m*self._cm[0]
 
@@ -72,14 +72,14 @@ class Tube:
 
         return None
 
-    def addNeighbours(self, key, angle, x_intercept):
+    def addNeighbors(self, key, angle, x_intercept):
         """ Function for adding neighbors
         
         The Field class keeps track of the intersecting
         tubes via a dict'd list. {key:[angle,x_intecept]}
         """
-        self._neighbours[key] = list()
-        self._neighbours[key] = [angle,x_intercept]
+        self._neighbors[key] = list()
+        self._neighbors[key] = [angle,x_intercept]
      
         return None
     
@@ -90,7 +90,7 @@ class Tube:
         attributes, and returns them as a dict.
         """
         
-        params = {'m':self._m,'l':self._l,'b':self._b,'cm':self._cm,'theta':self._theta,'P':self._P,'Q':self._Q,'neighbours':self._neighbours}
+        params = {'m':self._m,'l':self._l,'b':self._b,'cm':self._cm,'theta':self._theta,'P':self._P,'Q':self._Q,'neighbors':self._neighbors}
 
         return params
 

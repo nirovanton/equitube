@@ -29,6 +29,7 @@ import numpy as np
 from field import Field
 from plot import Plot
 from tube import Tube
+import time
 
 class Equitube:
     def __init__(self,argv):
@@ -86,25 +87,34 @@ class Equitube:
             for key in field.getTubes().keys():
                 if field.getTubes()[key].getParams()['P'][0] <= 0:
                     start.append(key),","
-                if field.getTubes()[key].getParams()['Q'][0] >= 10:
+                if field.getTubes()[key].getParams()['Q'][0] >= self._length:
                     stop.append(key)
             print "Starting Tubes:",start
             print "Stopping Tubes:",stop
             print "------------------------------------------"
-
+            #time.sleep(10)
             end = 0
             while end < 1:
                 field.calculateIntercepts()
                 point_forces = field.getPointForces()
                 
                 for key in field.getTubes().keys():
-                    print key,":",field.getTubes()[key].getParams()['neighbours'].keys()
+                    print key,":",field.getTubes()[key].getParams()['neighbors'].keys()
                 print "=================================="
                 traverses = 0
+                neighbor_dict = {}
+                roots = []
+                leaves = []
                 for index in tubes.keys():
+                    neighbor_dict[index] = list()
+                    neighbor_dict[index] = tubes[index].getParams()['neighbors'].keys()
                     if tubes[index].getParams()['P'][0] <= 0:
-                        print index
-                        traverses += field.traverseNeighbours(index,[])
+                        roots.append(index)
+                    if tubes[index].getParams()['Q'][0] >= self._length:
+                        leaves.append(index)
+                        #print index
+                for index in roots:
+                    traverses += field.traverseNeighbors(index,neighbor_dict,leaves,())
                 print traverses
 
                 #if end % 1 == 0:
