@@ -53,9 +53,9 @@ class Field:
         """
         for x in range(number):
             self._tubes[x] = Tube()
-            theta  = random.uniform(-7,7)
-            P = [random.uniform(0,self._length-.5),random.uniform(0,self._length-.5)]
-            self._tubes[x].createLine(theta,P)
+            theta  = random.uniform(0,np.pi)
+            cm = [random.uniform(0,self._length-.5),random.uniform(0,self._length-.5)]
+            self._tubes[x].createLine(theta,cm)
             params = self._tubes[x].getParams()
             self._startP[x] = list()
             self._startP[x] = params['P']
