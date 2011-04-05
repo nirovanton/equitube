@@ -32,10 +32,9 @@ class Field:
     intercepts, point forces, traversal paths, and rotate the tubes.
     """
 
-    def __init__(self,length,k,dm):
+    def __init__(self,length,k):
         """Initializes the field
         """
-        self._dm = dm # +/- change in slope per iteration
         self._k = k # spring constant
         self._startP = {}
         self._startQ = {}
@@ -44,7 +43,7 @@ class Field:
         self._length = length
 
     def addTubes(self, number = 1):
-        """This function adds a tube to the system 
+        """This function adds a tube to the system.
 
         This function will initialize another tube object and will add it
         to the list of active tubes. The non-random nature of the computer 
@@ -52,19 +51,17 @@ class Field:
         approximate length and position. the time.sleep statements are my 
         feeble attempt to increase the randomness of the generated lines.
         """
-       
         for x in range(number):
-            time.sleep(random.uniform(.001,0))
             self._tubes[x] = Tube()
-            m = random.uniform(-7,7)
-            time.sleep(random.uniform(.001,0))
-            cm = [random.uniform(0,self._length-.5),random.uniform(0,self._length-.5)]
-            self._tubes[x].createLine(m,cm)
+            theta  = random.uniform(-7,7)
+            P = [random.uniform(0,self._length-.5),random.uniform(0,self._length-.5)]
+            self._tubes[x].createLine(theta,P)
             params = self._tubes[x].getParams()
             self._startP[x] = list()
-            self._startP[x] = params['P'] 
+            self._startP[x] = params['P']
             self._startQ[x] = list()
             self._startQ[x] = params['Q']
+        
         return None
 
     def getTubes(self):
@@ -83,7 +80,6 @@ class Field:
         on the ends of each tube. This is factored into the torque
         calculations as well.
         """
-        
         force_dict = {}
         for tube_id in self._tubes.keys():
             force_dict[tube_id] = list()
@@ -92,22 +88,22 @@ class Field:
             P = self._tubes[tube_id].getParams()['P'] #P[x,y]
             Q = self._tubes[tube_id].getParams()['Q'] #Q[x,y]
             slope = self._tubes[tube_id].getParams()['m']
-            
+
+            # Calculating the spring forces.
             p_dist = np.sqrt((P[0]-self._startP[tube_id][0])**2 \
                            + (P[1]-self._startP[tube_id][1])**2)
             q_dist = np.sqrt((Q[0]-self._startQ[tube_id][0])**2 \
                            + (Q[1]-self._startQ[tube_id][1])**2)
-
             if self._startP[tube_id][1] > P[1]:
                 Fp += self._k*p_dist
             else:
                 Fp += -1*self._k*p_dist
-
             if self._startQ[tube_id][1] > Q[1]:
                 Fq += self._k*q_dist
             else:
                 Fq += -1*self._k*q_dist
                         
+            # Calculate the van der waals forces.
             neighbor_dict = self._tubes[tube_id].getParams()['neighbors']
             for index in neighbor_dict.keys():
                 xint = neighbor_dict[index][1]
@@ -156,7 +152,7 @@ class Field:
         # TODO Ponder a more graceful method.. 'cuz damn.
         for tube_id in self._tubes.keys():
             l = self._tubes[tube_id].getParams()['l']
-            m = self._tubes[tube_id].getParams()['m']
+            #m = self._tubes[tube_id].getParams()['m']
             cm = self._tubes[tube_id].getParams()['cm']
             theta = abs(self._tubes[tube_id].getParams()['theta'])
             Fp = force_dict[tube_id][0]
@@ -307,23 +303,31 @@ class Field:
         they intercept as well as the angle of intercept. all intercept
         angles are calculated to the right side of each intercept.
         """
-        
-        for dex1 in range(len(self._tubes)):
-            tube1 = self._tubes[dex1].getParams()
-            for dex2 in range(len(self._tubes)):
+        for dex in self._tubes.keys():
+            tube1 = self._tubes[dex].getParams()
+            for dex2 in self._tubes.keys():
                 tube2 = self._tubes[dex2].getParams()
                 if tube1['m'] == tube2['m']:
                     continue
+                
                 x = (tube2['b']-tube1['b'])/(tube1['m']-tube2['m'])
    
                 # Verify that the tubes intersect.
-                if x >= tube1['P'][0] and x <= tube1['Q'][0] \
-                and x >= tube2['P'][0] and x <= tube2['Q'][0] :
-                    if tube1['m'] > tube2['m']:
-                        angle = tube1['theta'] - tube2['theta']
-                    else:
-                        angle = tube2['theta'] - tube1['theta']
-                    self._tubes[dex1].addNeighbors(dex2,angle,x)
+                if (x >= tube1['P'][0] and x <= tube1['Q'][0]) \
+                or (x >= tube1['Q'][0] and x <= tube1['P'][0]):
+                    if (x >= tube2['P'][0] and x <= tube2['Q'][0]) \
+                    or (x >= tube2['Q'][0] and x <= tube2['P'][0]):
+                        if tube1['theta'] > tube2['theta']:
+                            if ( tube1['theta'] - tube2['theta'] ) > np.pi:
+                                angle = np.pi - tube1['theta'] - tube2['theta']
+                            else:
+                                angle = tube1['theta'] - tube2['theta']
+                        if tube2['theta'] > tube1['theta']:
+                            if ( tube2['theta'] - tube1['theta'] ) > np.pi:
+                                angle = np.pi - tube2['theta'] - tube1['theta']
+                            else:    
+                                angle = tube2['theta'] - tube1['theta']
+                        self._tubes[dex].addNeighbors(dex2,angle,x)
         return None
     
     def traverseNeighbors(self,index,neighbor_dict,leaves,prev_tubes):

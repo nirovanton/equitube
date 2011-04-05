@@ -43,32 +43,22 @@ class Tube:
         self._P = [] #[Xp,Yp]
         self._Q = [] #[Xq,Yq]
 
-    def createLine(self,slope,center):
+    def createLine(self,theta,P):
         """ Generates a Line segment
 
         This function generates the initial line segment, It also
         modifies the variables that are based on slope and center
         point after each iteration.
         """
-
         if self._l == None:
-            self._l = random.uniform(2,5)
-        self._m = slope
-        self._cm = center 
+            self._l = random.uniform(4,8)
+        self._m = np.tan(theta)
         self._neighbors = {}
-        self._theta = np.arctan(self._m)
-        self._b = self._cm[1] - self._m*self._cm[0]
-
-        xmax = self._cm[0] + abs((self._l*np.cos(self._theta)))
-        xmin = self._cm[0] - abs((self._l*np.cos(self._theta)))
-        ymax = self._cm[1] + abs((self._l*np.sin(self._theta)))
-        ymin = self._cm[1] - abs((self._l*np.sin(self._theta)))
-        if self._m <= 0:
-            self._P = [xmin,ymax]
-            self._Q = [xmax,ymin]
-        else:
-            self._P = [xmin,ymin]
-            self._Q = [xmax,ymax]
+        self._theta = theta
+        self._P = P
+        self._cm = [P[0] + .5*self._l*np.cos(theta),P[1] + .5*self._l*np.sin(theta)]
+        self._Q = [P[0] + self._l*np.cos(theta),P[1] + self._l*np.sin(theta)]
+        self._b = self._P[1] - self._m*self._P[0]
 
         return None
 
@@ -89,8 +79,16 @@ class Tube:
         This function takes all of the individual tube
         attributes, and returns them as a dict.
         """
-        
-        params = {'m':self._m,'l':self._l,'b':self._b,'cm':self._cm,'theta':self._theta,'P':self._P,'Q':self._Q,'neighbors':self._neighbors}
+        params = {
+            'm':self._m,
+            'l':self._l,
+            'b':self._b,
+            'cm':self._cm,
+            'theta':self._theta,
+            'P':self._P,
+            'Q':self._Q,
+            'neighbors':self._neighbors
+            }
 
         return params
 

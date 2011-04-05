@@ -66,12 +66,6 @@ class Equitube:
             ]
         parser.add_option('--spring', '-k', default=.001,
             help=''.join(spring_help_list))
-        deltaslope_help_list = [
-            "This option allows you to specify the amount of change ",
-            "the slope undergoes at each iteration"
-            ]
-        parser.add_option('--deltaslope', '-m', default = 0.05,
-            help=''.join(deltaslope_help_list))
         return parser.parse_args()
         
     def Run(self):
@@ -96,10 +90,10 @@ class Equitube:
             end = 0
             while end < 1:
                 field.calculateIntercepts()
-                point_forces = field.getPointForces()
+                #point_forces = field.getPointForces()
                 
-                for key in field.getTubes().keys():
-                    print key,":",field.getTubes()[key].getParams()['neighbors'].keys()
+                for key in tubes.keys():
+                    print key,":",tubes[key].getParams()['neighbors'].keys()
                 print "=================================="
                 traverses = 0
                 neighbor_dict = {}
