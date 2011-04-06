@@ -43,7 +43,7 @@ class Tube:
         self._P = [] #[Xp,Yp]
         self._Q = [] #[Xq,Yq]
 
-    def createLine(self,theta,center):
+    def createLine(self,center,theta):
         """ Generates a Line segment
 
         This function generates the initial line segment, It also

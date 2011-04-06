@@ -39,8 +39,13 @@ class Equitube:
         variables, arguments = self._parseOptions(argv, parser)
 
         self._count = int(variables.count)
-        self._springconst = float(variables.spring)
+        self._inc   = float(variables.increment)
+        self._spring_const = float(variables.spring)
         self._length = int(variables.length)
+        self._vander_const = float(variables.vander)
+        self._radius = float(variables.radius)
+        self._debug = variables.debug
+        self._verbose = variables.verbose
 
     def _parseOptions(self, argv, parser):
 
@@ -65,29 +70,47 @@ class Equitube:
             ]
         parser.add_option('--spring', '-k', default=.001,
             help=''.join(spring_help_list))
+        radius_help_list = [
+            "This allows you to specify the thickness of each ",
+            "nanotube, pass the value with units of nm typical ",
+            "radii are in the range (.3, 1) nm."
+            ]
+        parser.add_option('--radius', '-r', default=.5,
+            help=''.join(radius_help_list))
+        van_der_help_list = [
+            "This option allows you to specify the constant 'V' ",
+            "used to calculuate the Van Der Waals potential E."
+            ]
+        parser.add_option('--vander', '-V', default=.001,
+            help=''.join(van_der_help_list))
+        increment_help_list = [
+            "This option allows you to set the initial increment ",
+            "values for the relaxation function. smaller values ",
+            "are important when potential has many local max and ",
+            "min."
+            ]
+        parser.add_option('--increment', '-i', default=.05,
+            help=''.join(increment_help_list))
+
+        debug_help_list = ["Activate the debug output."]
+        parser.add_option('--debug', '-d', default=False,
+            help=''.join(debug_help_list))
+        verbose_help_list = ["Activate the verbose outbut."]
+        parser.add_option('--verbose', '-v', default=False,
+            help=''.join(verbose_help_list))
+
         return parser.parse_args()
         
     def Run(self):
         try:
             plot = Plot(self._length)
-            field = Field(self._length, self._springconst)
-            field.addTubes(self._count)
-
-            foo = 0
-            while foo < 1000:
-                field.calculateIntercepts()
-                point_forces = field.getPointForces()
-                tubes = field.getTubes()
-                """
-                for dex in tubes.keys():
-                    neighbors = tubes[dex].getParams()['neighbors']
-                    for key in neighbors.keys():
-                        print dex,"->",key, neighbors[key][0]*180/np.pi, neighbors[key][1]
-                """
-                plot.plotField(tubes)
-                field.rotateTubes(point_forces)
-                foo += 1
-
+            field = Field(self._length, self._spring_const, self._vander_const,self._radius, self._inc)
+            field.addTubes(self._count,)
+            tubes = field.getTubes()
+            plot.plotField(tubes)
+            field.relax()
+            tubes = field.getTubes()
+            plot.plotField(tubes)
                 
         except EquitubeException, e:
             raise EquitubeException(e.get_message())
