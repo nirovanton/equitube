@@ -68,11 +68,24 @@ class Equitube:
             help=''.join(spring_help_list))
         deltaslope_help_list = [
             "This option allows you to specify the amount of change ",
-            "the slope undergoes at each iteration"
+            "the slope undergoes at each iteration."
             ]
         parser.add_option('--deltaslope', '-m', default = 0.05,
             help=''.join(deltaslope_help_list))
+        debug_help_list = [
+            "Prints relevant debugging information."
+            ]
+        parser.add_option('--debug', '-d', default = False,
+            help=''.join(debug_help_list))
+        verbose_help_list = [
+            "Turns on verbosity of the output."
+            ]
+        parser.add_option('--verbose', '-v', default = False,
+            help=''.join(verbose_help_list))
+        
         return parser.parse_args()
+    
+
         
     def Run(self):
         try:
