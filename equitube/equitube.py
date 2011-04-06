@@ -41,7 +41,6 @@ class Equitube:
         self._count = int(variables.count)
         self._springconst = float(variables.spring)
         self._length = int(variables.length)
-        self._deltaslope = float(variables.deltaslope)
 
     def _parseOptions(self, argv, parser):
 
@@ -70,51 +69,25 @@ class Equitube:
         
     def Run(self):
         try:
-            field = Field(self._length, self._springconst, self._deltaslope)
-            field.addTubes(self._count)
             plot = Plot(self._length)
-            tubes = field.getTubes()
-            
-            # Debugging code
-            start = []
-            stop =[]
-            for key in field.getTubes().keys():
-                if field.getTubes()[key].getParams()['P'][0] <= 0:
-                    start.append(key),","
-                if field.getTubes()[key].getParams()['Q'][0] >= self._length:
-                    stop.append(key)
-            print "Starting Tubes:",start
-            print "Stopping Tubes:",stop
-            print "------------------------------------------"
-            #time.sleep(10)
-            end = 0
-            while end < 1:
-                field.calculateIntercepts()
-                #point_forces = field.getPointForces()
-                
-                for key in tubes.keys():
-                    print key,":",tubes[key].getParams()['neighbors'].keys()
-                print "=================================="
-                traverses = 0
-                neighbor_dict = {}
-                roots = []
-                leaves = []
-                for index in tubes.keys():
-                    neighbor_dict[index] = list()
-                    neighbor_dict[index] = tubes[index].getParams()['neighbors'].keys()
-                    if tubes[index].getParams()['P'][0] <= 0:
-                        roots.append(index)
-                    if tubes[index].getParams()['Q'][0] >= self._length:
-                        leaves.append(index)
-                        #print index
-                for index in roots:
-                    traverses += field.traverseNeighbors(index,neighbor_dict,leaves,())
-                print traverses
+            field = Field(self._length, self._springconst)
+            field.addTubes(self._count)
 
-                #if end % 1 == 0:
-                #plot.plotField(tubes)
-                #field.rotateTubes(point_forces)
-                end += 1
+            foo = 0
+            while foo < 1000:
+                field.calculateIntercepts()
+                point_forces = field.getPointForces()
+                tubes = field.getTubes()
+                """
+                for dex in tubes.keys():
+                    neighbors = tubes[dex].getParams()['neighbors']
+                    for key in neighbors.keys():
+                        print dex,"->",key, neighbors[key][0]*180/np.pi, neighbors[key][1]
+                """
+                plot.plotField(tubes)
+                field.rotateTubes(point_forces)
+                foo += 1
+
                 
         except EquitubeException, e:
             raise EquitubeException(e.get_message())
