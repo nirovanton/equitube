@@ -142,12 +142,23 @@ class Field:
             for key in params['neighbors'].keys():
                 theta = params['neighbors'][key][0]
                 print tube_id,"-->",key,":",theta*180/np.pi
-                energy += (self._a*self._V)*(1/abs(np.sin(theta))
+                energy += (self._a*self._V)*(1/abs(np.sin(theta)))
 
-            return energy
+        return energy
            
     
     def relax(self):
+        """ A Bruteforce method for relaxing the network.
+
+        This offsets each variable (x,y,theta) by an incremental amount
+        it then checks to see if the resulting change reduced the energy
+        of the system. If a +dx and a -dx both resulted in an increase in
+        energy the program considers the incremental value to be too great,
+        it halves the increment and continues to the next variable.
+
+        increment_values is a dict() that stores the individual dx dy dtheta
+        increments for each tube.
+        """
         relaxed = False
         increment_values = {}
         for tube_id in self._tubes.keys():
@@ -249,8 +260,15 @@ class Field:
                     print tube_id, "reduce-theta"
                 print tube_id,":",increment_values[tube_id]
 
-            if (round(increment_values[tube_id][0],100) == 0) \
-            and (round(increment_values[tube_id][1],100) == 0) \
-            and (round(increment_values[tube_id][2],100) == 0):
+            find = True
+            for inc_list in increment_values.values():
+                if (round(inc_list[0],15) != 0) \
+                or (round(inc_list[1],15) != 0) \
+                or (round(inc_list[2],15) != 0):
+                    find = False
+                    continue
+            if find:
                 relaxed = True
+
+                    
 
