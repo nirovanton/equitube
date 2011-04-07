@@ -135,14 +135,14 @@ class Field:
             
             P_dist_sqrd = (params['P'][0]-self._startP[tube_id][0])**2 + \
                           (params['P'][1]-self._startP[tube_id][1])**2
-
             Q_dist_sqrd = (params['Q'][0]-self._startQ[tube_id][0])**2 + \
                           (params['Q'][1]-self._startQ[tube_id][1])**2
-
             energy += (P_dist_sqrd + Q_dist_sqrd) * self._k
+
             for key in params['neighbors'].keys():
                 theta = params['neighbors'][key][0]
-                energy += (self._a * self._V) / np.sin(theta)
+                print tube_id,"-->",key,":",theta*180/np.pi
+                energy += (self._a*self._V)*(1/abs(np.sin(theta))
 
             return energy
            
@@ -249,8 +249,8 @@ class Field:
                     print tube_id, "reduce-theta"
                 print tube_id,":",increment_values[tube_id]
 
-            if (round(increment_values[tube_id][0],20) == 0) \
-            and (round(increment_values[tube_id][1],20) == 0) \
-            and (round(increment_values[tube_id][2],20) == 0):
+            if (round(increment_values[tube_id][0],100) == 0) \
+            and (round(increment_values[tube_id][1],100) == 0) \
+            and (round(increment_values[tube_id][2],100) == 0):
                 relaxed = True
 

@@ -105,19 +105,13 @@ class Equitube:
         try:
             plot = Plot(self._length)
 
-            field = Field(self._length,
-                self._spring_const,
-                self._vander_const,
-                self._radius,
-                self._inc
-                )
-
+            field = Field(self._length, self._spring_const,
+                self._vander_const, self._radius, self._inc)
             field.addTubes(self._count,)
+            
             tubes = field.getTubes()
             plot.plotField(tubes)
             field.relax()
-            field.calculateIntercepts()
-            print field.potential()
             tubes = field.getTubes()
             plot.plotField(tubes)
                 
