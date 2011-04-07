@@ -153,13 +153,13 @@ class Field:
         for tube_id in self._tubes.keys():
             increment_values[tube_id] = list()
             increment_values[tube_id] =[self._inc,self._inc,self._inc]
-
+        self.calculateIntercepts()
+        current_potential = self.potential()        
         while not relaxed:
             self.calculateIntercepts()
             current_potential = self.potential()
             
             for tube_id in self._tubes.keys():
-                
                 x_lock = False
                 y_lock = False
                 theta_lock = False
@@ -176,14 +176,18 @@ class Field:
                 """
                 self._tubes[tube_id].createLine([x+dx,y],theta)
                 self.calculateIntercepts()
-                if self.potential < current_potential:
+                new_potential = self.potential()
+                if new_potential < current_potential:
                     x_lock = True
+                    print tube_id,"+dx", new_potential, current_potential
                     x += dx
                 if x_lock == False:
                     self._tubes[tube_id].createLine([x-dx,y],theta)
                     self.calculateIntercepts()
-                    if self.potential < current_potential:
+                    new_potential = self.potential()
+                    if new_potential < current_potential:
                         x_lock = True
+                        print tube_id,"-dx"
                         x += -dx
                 """ If incrementing to both left and right, and still not
                 smaller, increment is too big. reset to original center
@@ -192,20 +196,23 @@ class Field:
                 if x_lock == False:
                     self._tubes[tube_id].createLine([x,y],theta)
                     increment_values[tube_id][0] = dx/2
+                    print tube_id, "reduced-dx"
                 
 
                 """ Minimize the y coordinate.
                 """
                 self._tubes[tube_id].createLine([x,y+dy],theta)
                 self.calculateIntercepts()
-                if self.potential < current_potential:
+                if self.potential() < current_potential:
                     y_lock = True
+                    print tube_id,"+dy"
                     y += dy
                 if y_lock == False:
                     self._tubes[tube_id].createLine([x,y-dy],theta)
                     self.calculateIntercepts()
-                    if self.potential < current_potential:
+                    if self.potential() < current_potential:
                         y_lock = True
+                        print tube_id,"-dy"
                         y += -dy
                 """ If incrementing to both top and bottom, and still not
                 smaller, increment is too big. reset to original cm
@@ -214,20 +221,23 @@ class Field:
                 if y_lock == False:
                     self._tubes[tube_id].createLine([x,y],theta)
                     increment_values[tube_id][1] = dy/2
+                    print tube_id, "reduce-dy"
 
 
                 """ Minimizing theta
                 """
                 self._tubes[tube_id].createLine([x,y],theta + dtheta)
                 self.calculateIntercepts()
-                if self.potential < current_potential:
-                    y_lock = True
-                    theta += dy
+                if self.potential() < current_potential:
+                    theta_lock = True
+                    print tube_id,"+dtheta"
+                    theta += dtheta
                 if theta_lock == False:
                     self._tubes[tube_id].createLine([x,y],theta - dtheta)
                     self.calculateIntercepts()
-                    if self.potential < current_potential:
+                    if self.potential() < current_potential:
                         theta_lock = True
+                        print tube_id,"-dtheta"
                         theta += -dtheta
                 """ If incrementing to both top and bottom, and still not
                 smaller, increment is too big. reset to original cm
@@ -235,9 +245,12 @@ class Field:
                 """
                 if theta_lock == False:
                     self._tubes[tube_id].createLine([x,y],theta)
-                    increment_values[tube_id][2] = dy/2
-            print tube_id,":",increment_values[tube_id]
+                    increment_values[tube_id][2] = dtheta/2
+                    print tube_id, "reduce-theta"
+                print tube_id,":",increment_values[tube_id]
 
-            if round(increment_values[tube_id][0],20) == 0:
+            if (round(increment_values[tube_id][0],20) == 0) \
+            and (round(increment_values[tube_id][1],20) == 0) \
+            and (round(increment_values[tube_id][2],20) == 0):
                 relaxed = True
 
