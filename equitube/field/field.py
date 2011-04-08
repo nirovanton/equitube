@@ -120,7 +120,7 @@ class Field:
             # vanderwaals potental ~ aV/sin(theta)
             for key in params['neighbors'].keys():
                 theta = params['neighbors'][key][0]
-                energy += (self._a*self._V)/abs(np.sin(theta))
+                energy += -1*(self._a*self._V)/abs(np.sin(theta))
 
         return energy
            
