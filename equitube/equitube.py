@@ -37,9 +37,9 @@ class Equitube:
         usage = "usage: %prog [options]"
         parser = optparse.OptionParser(usage=usage)
         variables, arguments = self._parseOptions(argv, parser)
-
+        
         self._count = int(variables.count)
-        self._inc   = float(variables.increment)
+        self._inc = float(variables.increment)
         self._spring_const = float(variables.spring)
         self._length = int(variables.length)
         self._vander_const = float(variables.vander)
@@ -93,11 +93,11 @@ class Equitube:
             help=''.join(increment_help_list))
 
         debug_help_list = ["Activate the debug output."]
-        parser.add_option('--debug', '-d', default=False,
-            help=''.join(debug_help_list))
+        parser.add_option('--debug', '-d', action='store_true',
+            default=False, help=''.join(debug_help_list))
         verbose_help_list = ["Activate the verbose outbut."]
-        parser.add_option('--verbose', '-v', default=False,
-            help=''.join(verbose_help_list))
+        parser.add_option('--verbose', '-v', action='store_true',
+            default=False, help=''.join(verbose_help_list))
 
         return parser.parse_args()
         
@@ -106,15 +106,24 @@ class Equitube:
             plot = Plot(self._length)
 
             field = Field(self._length, self._spring_const,
-                self._vander_const, self._radius, self._inc)
+                          self._vander_const, self._radius, self._inc)
             field.addTubes(self._count,)
             
             tubes = field.getTubes()
+            
+            if self._debug:
+                field.calculateIntercepts()
+                for key in tubes.keys():
+                    neighbors = tubes[key].getParams()['neighbors']
+                    for key2 in neighbors.keys():
+                        print key,":",key2,"\t",neighbors[key2][0]
+
             plot.plotField(tubes)
             field.relax()
             tubes = field.getTubes()
             plot.plotField(tubes)
-                
+   
+
         except EquitubeException, e:
             raise EquitubeException(e.get_message())
 

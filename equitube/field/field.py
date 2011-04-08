@@ -32,18 +32,18 @@ class Field:
     intercepts, point forces, traversal paths, and rotate the tubes.
     """
 
-    def __init__(self,length,spring_const,vander_const,radius,inc):
+    def __init__(self,length,spring_const,
+                 vander_const,radius,increment):
         """Initializes the field
         """
         self._k = spring_const
         self._V = vander_const
         self._a = radius*10**-9
-        self._inc = inc
+        self._inc = increment
 
         self._startP = {}
         self._startQ = {}
         self._tubes = {}
-        self._paths = {}
         self._length = length
 
     def addTubes(self, number = 1):
@@ -57,7 +57,7 @@ class Field:
         """
         for x in range(number):
             self._tubes[x] = Tube()
-            theta  = random.uniform(0,np.pi)
+            theta  = random.uniform(0,2*np.pi)
             time.sleep(random.uniform(random.uniform(.0001,0),0))
             cm = [random.uniform(0,self._length-.5),random.uniform(0,self._length-.5)]
             self._tubes[x].createLine(cm,theta)
@@ -87,62 +87,40 @@ class Field:
         """
         for dex1 in range(len(self._tubes)):
             tube1 = self._tubes[dex1].getParams()
-            if np.sin(tube1['theta']) >= 0: 
-                if np.cos(tube1['theta']) >= 0:
-                    phi1 = tube1['theta']
-                if np.cos(tube1['theta']) < 0:
-                    phi1 = tube1['theta'] - np.pi
-            if np.sin(tube1['theta']) < 0:
-                if np.cos(tube1['theta']) >= 0:
-                    phi1 = tube1['theta'] - 2*np.pi
-                if np.cos(tube1['theta']) < 0:
-                    phi1 = tube1['theta'] - np.pi
-
             for dex2 in range(len(self._tubes)):
                 tube2 = self._tubes[dex2].getParams()
                 if tube1['m'] == tube2['m']:
                     continue
-  
                 x = (tube2['b']-tube1['b'])/(tube1['m']-tube2['m'])
-
-                # Verify that the tubes intersect.
                 if x >= tube1['P'][0] and x <= tube1['Q'][0] \
                 and x >= tube2['P'][0] and x <= tube2['Q'][0]:
-     
-                    if np.sin(tube2['theta']) >= 0:                
-                        if np.cos(tube2['theta']) >= 0:
-                            phi2 = tube2['theta']                
-                        if np.cos(tube2['theta']) < 0:
-                            phi2 = tube2['theta'] - np.pi
-                    if np.sin(tube2['theta']) < 0:
-                        if np.cos(tube2['theta']) >= 0:
-                            phi2 = tube2['theta'] - 2*np.pi
-                        if np.cos(tube2['theta']) < 0:
-                            phi2 = tube2['theta'] - np.pi
-
-                    if phi1 >= phi2:
-                        angle = phi1 - phi2 
-                    else:
-                        angle = phi2 - phi1
+                    angle = abs(tube1['theta']-tube2['theta'])
                     self._tubes[dex1].addNeighbors(dex2,angle,x)
         return None
     
 
     def potential(self):
+        """ Calculates the energy of the network.
+
+        This function considers the endpoint displacement
+        and the angle of interaction to generate an
+        approximate numerical value for the energy.
+        """
         energy = 0.0
         for tube_id in self._tubes.keys():
             params = self._tubes[tube_id].getParams()
-            
+           
+            # spring potential  ~ kr^2
             P_dist_sqrd = (params['P'][0]-self._startP[tube_id][0])**2 + \
                           (params['P'][1]-self._startP[tube_id][1])**2
             Q_dist_sqrd = (params['Q'][0]-self._startQ[tube_id][0])**2 + \
                           (params['Q'][1]-self._startQ[tube_id][1])**2
             energy += (P_dist_sqrd + Q_dist_sqrd) * self._k
-
+            
+            # vanderwaals potental ~ aV/sin(theta)
             for key in params['neighbors'].keys():
                 theta = params['neighbors'][key][0]
-                print tube_id,"-->",key,":",theta*180/np.pi
-                energy += (self._a*self._V)*(1/abs(np.sin(theta)))
+                energy += (self._a*self._V)/abs(np.sin(theta))
 
         return energy
            
@@ -160,15 +138,17 @@ class Field:
         increments for each tube.
         """
         relaxed = False
+
+        # prepare the increment dictionary.
         increment_values = {}
         for tube_id in self._tubes.keys():
             increment_values[tube_id] = list()
-            increment_values[tube_id] =[self._inc,self._inc,self._inc]
-        self.calculateIntercepts()
-        current_potential = self.potential()        
+            increment_values[tube_id] = [self._inc,self._inc,self._inc]
+
+        # relax the network. 
         while not relaxed:
             self.calculateIntercepts()
-            current_potential = self.potential()
+            previous_potential = self.potential()
             
             for tube_id in self._tubes.keys():
                 x_lock = False
@@ -181,94 +161,82 @@ class Field:
                 
                 x,y = self._tubes[tube_id].getParams()['cm']
                 theta = self._tubes[tube_id].getParams()['theta']
-                
-                
+                                
                 """ Minimize the x coordinate.
                 """
                 self._tubes[tube_id].createLine([x+dx,y],theta)
                 self.calculateIntercepts()
-                new_potential = self.potential()
-                if new_potential < current_potential:
+                if self.potential() < previous_potential:
                     x_lock = True
-                    print tube_id,"+dx", new_potential, current_potential
                     x += dx
                 if x_lock == False:
                     self._tubes[tube_id].createLine([x-dx,y],theta)
                     self.calculateIntercepts()
-                    new_potential = self.potential()
-                    if new_potential < current_potential:
+                    if self.potential() < previous_potential:
                         x_lock = True
-                        print tube_id,"-dx"
                         x += -dx
-                """ If incrementing to both left and right, and still not
-                smaller, increment is too big. reset to original center
-                and cut incrementer in half.
+                """ If increasing and decreasing the y coordinate and
+                still not smaller energy: increment is too big. Cut
+                incrementer in half.
                 """
                 if x_lock == False:
-                    self._tubes[tube_id].createLine([x,y],theta)
                     increment_values[tube_id][0] = dx/2
-                    print tube_id, "reduced-dx"
-                
 
                 """ Minimize the y coordinate.
                 """
                 self._tubes[tube_id].createLine([x,y+dy],theta)
                 self.calculateIntercepts()
-                if self.potential() < current_potential:
+                if self.potential() < previous_potential:
                     y_lock = True
-                    print tube_id,"+dy"
                     y += dy
                 if y_lock == False:
                     self._tubes[tube_id].createLine([x,y-dy],theta)
                     self.calculateIntercepts()
-                    if self.potential() < current_potential:
+                    if self.potential() < previous_potential:
                         y_lock = True
-                        print tube_id,"-dy"
                         y += -dy
-                """ If incrementing to both top and bottom, and still not
-                smaller, increment is too big. reset to original cm
-                and cut incrementer in half.
+                """ If increasing and decreasing the y coordinate and
+                still not smaller energy: increment is too big. Cut 
+                incrementer in half.
                 """
                 if y_lock == False:
-                    self._tubes[tube_id].createLine([x,y],theta)
                     increment_values[tube_id][1] = dy/2
-                    print tube_id, "reduce-dy"
-
 
                 """ Minimizing theta
                 """
                 self._tubes[tube_id].createLine([x,y],theta + dtheta)
                 self.calculateIntercepts()
-                if self.potential() < current_potential:
+                if self.potential() < previous_potential:
                     theta_lock = True
-                    print tube_id,"+dtheta"
                     theta += dtheta
                 if theta_lock == False:
                     self._tubes[tube_id].createLine([x,y],theta - dtheta)
                     self.calculateIntercepts()
-                    if self.potential() < current_potential:
+                    if self.potential() < previous_potential:
                         theta_lock = True
-                        print tube_id,"-dtheta"
                         theta += -dtheta
-                """ If incrementing to both top and bottom, and still not
-                smaller, increment is too big. reset to original cm
-                and cut incrementer in half.
+                """ If increasing or decreasing the angle, and still 
+                not smaller energy: Increment is too big. Cut incrementer
+                in half.
                 """
                 if theta_lock == False:
-                    self._tubes[tube_id].createLine([x,y],theta)
                     increment_values[tube_id][2] = dtheta/2
-                    print tube_id, "reduce-theta"
-                print tube_id,":",increment_values[tube_id]
+                    self._tubes[tube_id].createLine([x,y],theta)
 
+ 
+            
+            """ Verify that all of the increments are very small. If they
+            are <= 10^-20 consider the system relaxed.
+            """
             find = True
             for inc_list in increment_values.values():
-                if (round(inc_list[0],15) != 0) \
-                or (round(inc_list[1],15) != 0) \
-                or (round(inc_list[2],15) != 0):
+                if (round(inc_list[0],20) != 0) \
+                or (round(inc_list[1],20) != 0) \
+                or (round(inc_list[2],20) != 0):
                     find = False
                     continue
             if find:
                 relaxed = True
 
-                    
+        return None            
 
