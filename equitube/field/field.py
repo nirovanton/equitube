@@ -226,13 +226,13 @@ class Field:
  
             
             """ Verify that all of the increments are very small. If they
-            are <= 10^-20 consider the system relaxed.
+            are <= 10^-10 consider the system relaxed.
             """
             find = True
             for inc_list in increment_values.values():
-                if (round(inc_list[0],20) != 0) \
-                or (round(inc_list[1],20) != 0) \
-                or (round(inc_list[2],20) != 0):
+                if (round(inc_list[0],10) != 0) \
+                or (round(inc_list[1],10) != 0) \
+                or (round(inc_list[2],10) != 0):
                     find = False
                     continue
             if find:
