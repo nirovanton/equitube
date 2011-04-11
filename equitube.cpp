@@ -26,12 +26,14 @@ using namespace std;
 
 // global vars.
 //---------------------
-int tube_count = 20;
+int tube_count = 50;
 int field_size = 10;
 float vand_const = 1.0;
 float spring_const = 1.0;
 float radius = 1e-9;
 float** tube_array = new float*[tube_count];
+float** p_initial = new float*[tube_count];
+float** q_initial = new float*[tube_count];
 //---------------------
 
 
@@ -41,27 +43,54 @@ float calculateEnergy()
     
     for(int k=0; k<tube_count; k++)
     {
-        // TODO
-        // --------
-        // add the spring energy calculations.
-        // --------
         float m1 = tan(tube_array[k][2]);
         float b1 = tube_array[k][1]-m1*tube_array[k][0];
-        float x_min1 = tube_array[k][0] - abs(tube_array[k][3]*cos(tube_array[k][3]));
-        float x_max1 = tube_array[k][0] + abs(tube_array[k][3]*cos(tube_array[k][3]));
+ 
+        float p1[2];
+        float q1[2];
+        p1[0] = tube_array[k][0] - abs(tube_array[k][3]*cos(tube_array[k][2]));
+        q1[0] = tube_array[k][0] + abs(tube_array[k][3]*cos(tube_array[k][2]));
+        if(m1 >= 0)
+        {
+            p1[1] = tube_array[k][1] - abs(tube_array[k][3]*sin(tube_array[k][2]));
+            q1[1] = tube_array[k][1] + abs(tube_array[k][3]*sin(tube_array[k][2]));
+        }
+        else
+        {
+            p1[1] = tube_array[k][1] + abs(tube_array[k][3]*sin(tube_array[k][2]));
+            q1[1] = tube_array[k][1] - abs(tube_array[k][3]*sin(tube_array[k][2]));
+        }
+            
+        // spring
+        potential += spring_const*(pow((p_initial[k][0]-p1[0]),2)+pow((p_initial[k][1]-p1[1]),2));
+        potential += spring_const*(pow((q_initial[k][0]-q1[0]),2)+pow((q_initial[k][1]-q1[1]),2));
+
+        // Vanderwaals
         for(int j=0; j<tube_count; j++)
         {
             float m2 = tan(tube_array[j][2]);
             if(m1 == m2)
                 continue;
+            float b2 = tube_array[j][1]-m2*tube_array[j][0];            
             
-            float b2 = tube_array[j][1]-m2*tube_array[j][0];
-            float x_min2 = tube_array[j][0] - abs(tube_array[j][3]*cos(tube_array[j][3]));
-            float x_max2 = tube_array[j][0] + abs(tube_array[j][3]*cos(tube_array[j][3]));
+            float p2[2];
+            float q2[2];
+            p2[0] = tube_array[j][0] - abs(tube_array[j][3]*cos(tube_array[j][2]));
+            q2[0] = tube_array[j][0] + abs(tube_array[j][3]*cos(tube_array[j][2]));
+            if(m2 >= 0)
+            {
+                p2[1] = tube_array[j][1] - abs(tube_array[j][3]*sin(tube_array[j][2]));
+                q2[1] = tube_array[j][1] + abs(tube_array[j][3]*sin(tube_array[j][2]));
+            }   
+            else
+            {   
+                p2[1] = tube_array[j][1] + abs(tube_array[j][3]*sin(tube_array[j][2]));
+                q2[1] = tube_array[j][1] - abs(tube_array[j][3]*sin(tube_array[j][2]));
+            } 
+
             float x_int = (b2-b1)/(m1-m2);
-            
-            if( x_int >= x_min1 && x_int >= x_min2 && x_int <= x_max1 && x_int <= x_max2)
-                potential += -1*(radius*vand_const)/abs(sin(tube_array[k][3]-tube_array[j][3]));
+            if(x_int >= p1[0] && x_int >= p2[0] && x_int <= q1[0] && x_int <= q2[0])
+                potential += -1*(radius*vand_const)/abs(sin(tube_array[k][2]-tube_array[j][2]));
         }
     }
     
@@ -70,7 +99,7 @@ float calculateEnergy()
 
 // TODO 
 // ------------
-// void minimizeEnergy()
+// void relaxNetwork()
 // void compressNetwork()
 // float calculateCurrent()
 // ------------
@@ -86,17 +115,35 @@ int main ()
     // Create the tubes.
     for(int i = 0; i < tube_count; i++)
     {
+        // Random variables
         float angle = (min_angle-max_angle)*(float)rand()/(float)(RAND_MAX)+max_angle;
         float x_cm = field_size*(float)rand()/(float)(RAND_MAX);
         float y_cm = field_size*(float)rand()/(float)(RAND_MAX);
-        float tube_length = 3-(float)rand()/(float)(RAND_MAX);
-        
+        float length = 3-(float)rand()/(float)(RAND_MAX);
+      
+        // Populate the tube array.
         tube_array[i] = new float[4];
-
         tube_array[i][0] = x_cm;
         tube_array[i][1] = y_cm;
         tube_array[i][2] = angle;
-        tube_array[i][3] = tube_length;
+        tube_array[i][3] = length;
+
+        // (P) O------------O (Q) ( Px < Qx )
+        // populate the initial endpoint arrays.
+        p_initial[i] = new float[2];
+        q_initial[i] = new float[2];
+        p_initial[i][0] = x_cm - abs(length*cos(angle));
+        q_initial[i][0] = x_cm + abs(length*cos(angle));
+        if(tan(angle) >= 0)
+        {
+            p_initial[i][1] = y_cm - abs(length*sin(angle));
+            q_initial[i][1] = y_cm + abs(length*sin(angle));
+        }
+        else
+        {
+            p_initial[i][1] = y_cm + abs(length*sin(angle));
+            q_initial[i][1] = y_cm - abs(length*sin(angle));
+        }
     }
     
     energy = calculateEnergy();
