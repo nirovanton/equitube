@@ -26,7 +26,7 @@ using namespace std;
 
 // global vars.
 //---------------------
-int tube_count = 50;
+int tube_count = 10;
 int field_size = 10;
 float vand_const = 1.0;
 float spring_const = 1.0;
