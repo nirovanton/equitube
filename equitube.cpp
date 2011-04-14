@@ -1,5 +1,5 @@
 /*######################################################################
-# Copyright (C) 2011 by John Harris <john.harris@ndsu.edu>             #
+# Copyright (C) 2011 by John Harris <john.harrisj@ndsu.edu>            #
 #                                                                      #
 # This program is free software; you can redistribute it and#or modify #
 # it under the terms of the GNU General Public License as published by #
@@ -13,7 +13,7 @@
 #                                                                      #
 # You should have received a copy of the GNU General Public License    #
 # along with this program; if not, write to the                        #
-# Fr ee Software Foundation, Inc.,                                      #
+# Free Software Foundation, Inc.,                                      #
 # 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.            #
 ######################################################################*/
 
@@ -97,9 +97,164 @@ float calculateEnergy()
     return potential;
 }
 
+
+
+void relaxNetwork()
+{
+    
+    // Initialize Increment arrays
+    // ---------------------------
+
+    float** x_iteration_array = new float*[tube_count];
+    float** y_iteration_array = new float*[tube_count];
+    float** theta_iteration_array = new float*[tube_count];
+    for(int a=0; a<tube_count; a++)
+    {
+        // [ dx , increase_counter , decrease_counter ]
+        x_iteration_array[a] = new float[3];
+        y_iteration_array[a] = new float[3];
+        theta_iteration_array[a] = new float[3];
+        x_iteration_array[a][0] = .05;
+        x_iteration_array[a][1] = 0;
+        x_iteration_array[a][2] = 0;
+        y_iteration_array[a][0] = .05;
+        y_iteration_array[a][1] = 0;
+        y_iteration_array[a][2] = 0;
+        theta_iteration_array[a][0] = .05;
+        theta_iteration_array[a][1] = 0;
+        theta_iteration_array[a][2] = 0;
+    }
+    
+
+    // Relax the system
+    // ----------------
+    bool relaxed = false;
+    while(relaxed == false)
+    {   
+        float starting_energy = calculateEnergy();
+        for(int j = 0; j < tube_count; j++)
+        {
+            
+            // MINIMIZE X
+            // ----------
+            bool x_min = false;
+            // <incease x>
+            tube_array[j][0] += x_iteration_array[j][0];
+            if(calculateEnergy() > starting_energy)
+            {
+                cout<< tube_array[j][0];
+                tube_array[j][0] += -1*x_iteration_array[j][0];
+            }
+            else if(calculateEnergy() <= starting_energy)
+            {
+                cout <<j<<": x_big :"<<tube_array[j][0]<<endl;
+
+                starting_energy = calculateEnergy();                
+                x_iteration_array[j][1] += 1;
+                x_iteration_array[j][2] = 0;
+                x_min = true;
+            }
+            if(x_min == false)
+            {
+                // <increase x>
+                tube_array[j][0] += -1*x_iteration_array[j][0];
+                if(calculateEnergy() > starting_energy)
+                    tube_array[j][0] += x_iteration_array[j][0];
+                else if(calculateEnergy() <= starting_energy)
+                {
+                    cout <<j<<": x_small :"<<tube_array[j][0]<<endl;
+                    starting_energy = calculateEnergy();
+                    x_iteration_array[j][2] += 1;
+                    x_iteration_array[j][1] = 0;
+                    x_min = true;
+                }
+                if(x_min == false)
+                {
+                    float tmp = x_iteration_array[j][0]/2;
+                    x_iteration_array[j][0] = tmp;
+                    x_iteration_array[j][1] = 0;
+                    x_iteration_array[j][2] = 0;
+                    cout <<j<<":"<<x_iteration_array[j][0]<<endl;
+                }
+            }
+             
+            // MINIMIZE Y
+            // ----------
+            bool y_min = false;
+            // <incease y>
+            tube_array[j][1] += y_iteration_array[j][0];
+            if(calculateEnergy() > starting_energy)
+                tube_array[j][1] += -1*y_iteration_array[j][0];
+            if(calculateEnergy() <= starting_energy)
+            {
+                starting_energy = calculateEnergy();
+                y_iteration_array[j][1] += 1;
+                y_iteration_array[j][2] = 0;
+                y_min = true;
+            }
+            if(y_min == false)
+            {
+                // <decrease y>
+                tube_array[j][1] += -1*y_iteration_array[j][0];
+                if(calculateEnergy() > starting_energy)
+                    tube_array[j][1] += y_iteration_array[j][0];
+                if(calculateEnergy() <= starting_energy)
+                {
+                    starting_energy = calculateEnergy();
+                    y_iteration_array[j][2] += 1;
+                    y_iteration_array[j][1] = 0;
+                    y_min = true;
+                }
+                if(y_min == false)
+                {
+                    float tmp = y_iteration_array[j][0]/2;
+                    y_iteration_array[j][0] = tmp;
+                    y_iteration_array[j][1] = 0;
+                    y_iteration_array[j][2] = 0;
+                }
+            }
+
+            // MINIMIZE THETA
+            // --------------
+            bool theta_min = false;
+            // <incease theta>
+            tube_array[j][2] += theta_iteration_array[j][0];
+            if(calculateEnergy() > starting_energy)
+                tube_array[j][2] += -1*theta_iteration_array[j][0];
+            if(calculateEnergy() <= starting_energy)
+            {
+                starting_energy = calculateEnergy();
+                theta_iteration_array[j][1] += 1;
+                theta_iteration_array[j][2] = 0;
+                theta_min = true;
+            }
+            if(theta_min == false)
+            {
+                // <decrease theta>
+                tube_array[j][2] += -1*theta_iteration_array[j][0];
+                if(calculateEnergy() > starting_energy)
+                    tube_array[j][2] += theta_iteration_array[j][0];
+                if(calculateEnergy() <= starting_energy)
+                {
+                    starting_energy = calculateEnergy();
+                    theta_iteration_array[j][2] += 1;
+                    theta_iteration_array[j][1] = 0;
+                    theta_min = true;
+                }
+                if(theta_min == false)
+                {
+                    float tmp = theta_iteration_array[j][0]/2;
+                    theta_iteration_array[j][0] = tmp;
+                    theta_iteration_array[j][1] = 0;
+                    theta_iteration_array[j][2] = 0;
+                }
+            }
+        }
+    }
+}
+
 // TODO 
 // ------------
-// void relaxNetwork()
 // void compressNetwork()
 // float calculateCurrent()
 // ------------
@@ -147,7 +302,8 @@ int main ()
     }
     
     energy = calculateEnergy();
-    cout << energy <<endl;
+    cout << energy << endl;
+    relaxNetwork();
     return 0;
 }
 
