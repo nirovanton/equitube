@@ -17,79 +17,78 @@
 # 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.            #
 ######################################################################*/
 
-#include <iostream>
-#include <cstdlib>
-#include <ctime>
-#include <cmath>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <math.h>
+#include <mygraph.h>
 
-using namespace std;
 
-// global vars.
 //---------------------
-int tube_count = 10;
+#define tube_count 10
 int field_size = 10;
-float vand_const = 1.0;
-float spring_const = 1.0;
-float radius = 1e-9;
-float** tube_array = new float*[tube_count];
-float** p_initial = new float*[tube_count];
-float** q_initial = new float*[tube_count];
+double radius = 1e-9;
+double vand_const = 1.0;
+double spring_const = 1.0;
+double tube_array[tube_count][4];
+double p_initial[tube_count][4];
+double energy;
 //---------------------
 
+int done=0,pause=1,sstep=1;
 
-float calculateEnergy()
+
+double calculateEnergy()
 {
-    float potential = 0.0;
+    double potential = 0.0;
     
     for(int k=0; k<tube_count; k++)
     {
-        float m1 = tan(tube_array[k][2]);
-        float b1 = tube_array[k][1]-m1*tube_array[k][0];
+        double m1 = tan(tube_array[k][2]);
+        double b1 = tube_array[k][1]-m1*tube_array[k][0];
  
-        float p1[2];
-        float q1[2];
+        double p1[4];
         p1[0] = tube_array[k][0] - abs(tube_array[k][3]*cos(tube_array[k][2]));
-        q1[0] = tube_array[k][0] + abs(tube_array[k][3]*cos(tube_array[k][2]));
+        p1[2] = tube_array[k][0] + abs(tube_array[k][3]*cos(tube_array[k][2]));
         if(m1 >= 0)
         {
             p1[1] = tube_array[k][1] - abs(tube_array[k][3]*sin(tube_array[k][2]));
-            q1[1] = tube_array[k][1] + abs(tube_array[k][3]*sin(tube_array[k][2]));
+            p1[3] = tube_array[k][1] + abs(tube_array[k][3]*sin(tube_array[k][2]));
         }
         else
         {
             p1[1] = tube_array[k][1] + abs(tube_array[k][3]*sin(tube_array[k][2]));
-            q1[1] = tube_array[k][1] - abs(tube_array[k][3]*sin(tube_array[k][2]));
+            p1[3] = tube_array[k][1] - abs(tube_array[k][3]*sin(tube_array[k][2]));
         }
             
         // spring
         potential += spring_const*(pow((p_initial[k][0]-p1[0]),2)+pow((p_initial[k][1]-p1[1]),2));
-        potential += spring_const*(pow((q_initial[k][0]-q1[0]),2)+pow((q_initial[k][1]-q1[1]),2));
+        potential += spring_const*(pow((p_initial[k][2]-p1[2]),2)+pow((p_initial[k][3]-p1[3]),2));
 
         // Vanderwaals
         for(int j=0; j<tube_count; j++)
         {
-            float m2 = tan(tube_array[j][2]);
+            double m2 = tan(tube_array[j][2]);
             if(m1 == m2)
                 continue;
-            float b2 = tube_array[j][1]-m2*tube_array[j][0];            
+            double b2 = tube_array[j][1]-m2*tube_array[j][0];            
             
-            float p2[2];
-            float q2[2];
+            double p2[4];
             p2[0] = tube_array[j][0] - abs(tube_array[j][3]*cos(tube_array[j][2]));
-            q2[0] = tube_array[j][0] + abs(tube_array[j][3]*cos(tube_array[j][2]));
+            p2[2] = tube_array[j][0] + abs(tube_array[j][3]*cos(tube_array[j][2]));
             if(m2 >= 0)
             {
                 p2[1] = tube_array[j][1] - abs(tube_array[j][3]*sin(tube_array[j][2]));
-                q2[1] = tube_array[j][1] + abs(tube_array[j][3]*sin(tube_array[j][2]));
+                p2[3] = tube_array[j][1] + abs(tube_array[j][3]*sin(tube_array[j][2]));
             }   
             else
             {   
                 p2[1] = tube_array[j][1] + abs(tube_array[j][3]*sin(tube_array[j][2]));
-                q2[1] = tube_array[j][1] - abs(tube_array[j][3]*sin(tube_array[j][2]));
+                p2[3] = tube_array[j][1] - abs(tube_array[j][3]*sin(tube_array[j][2]));
             } 
 
-            float x_int = (b2-b1)/(m1-m2);
-            if(x_int >= p1[0] && x_int >= p2[0] && x_int <= q1[0] && x_int <= q2[0])
+            double x_int = (b2-b1)/(m1-m2);
+            if(x_int >= p1[0] && x_int >= p2[0] && x_int <= p1[2] && x_int <= p2[2])
                 potential += -1*(radius*vand_const)/abs(sin(tube_array[k][2]-tube_array[j][2]));
         }
     }
@@ -105,15 +104,12 @@ void relaxNetwork()
     // Initialize Increment arrays
     // ---------------------------
 
-    float** x_iteration_array = new float*[tube_count];
-    float** y_iteration_array = new float*[tube_count];
-    float** theta_iteration_array = new float*[tube_count];
+    double x_iteration_array[tube_count][3];
+    double y_iteration_array[tube_count][3];
+    double theta_iteration_array[tube_count][3];
     for(int a=0; a<tube_count; a++)
     {
         // [ dx , increase_counter , decrease_counter ]
-        x_iteration_array[a] = new float[3];
-        y_iteration_array[a] = new float[3];
-        theta_iteration_array[a] = new float[3];
         x_iteration_array[a][0] = .05;
         x_iteration_array[a][1] = 0;
         x_iteration_array[a][2] = 0;
@@ -128,33 +124,31 @@ void relaxNetwork()
 
     // Relax the system
     // ----------------
-    bool relaxed = false;
-    while(relaxed == false)
+    int relaxed = 0;
+    while(relaxed == 0)
     {   
-        float starting_energy = calculateEnergy();
+        double starting_energy = calculateEnergy();
         for(int j = 0; j < tube_count; j++)
         {
             
             // MINIMIZE X
             // ----------
-            bool x_min = false;
+            int x_min = 0;
             // <incease x>
             tube_array[j][0] += x_iteration_array[j][0];
             if(calculateEnergy() > starting_energy)
             {
-                cout<< tube_array[j][0];
                 tube_array[j][0] += -1*x_iteration_array[j][0];
             }
             else if(calculateEnergy() <= starting_energy)
             {
-                cout <<j<<": x_big :"<<tube_array[j][0]<<endl;
 
                 starting_energy = calculateEnergy();                
                 x_iteration_array[j][1] += 1;
                 x_iteration_array[j][2] = 0;
-                x_min = true;
+                x_min = 1;
             }
-            if(x_min == false)
+            if(x_min == 0)
             {
                 // <increase x>
                 tube_array[j][0] += -1*x_iteration_array[j][0];
@@ -162,25 +156,23 @@ void relaxNetwork()
                     tube_array[j][0] += x_iteration_array[j][0];
                 else if(calculateEnergy() <= starting_energy)
                 {
-                    cout <<j<<": x_small :"<<tube_array[j][0]<<endl;
                     starting_energy = calculateEnergy();
                     x_iteration_array[j][2] += 1;
                     x_iteration_array[j][1] = 0;
-                    x_min = true;
+                    x_min = 1;
                 }
-                if(x_min == false)
+                if(x_min == 0)
                 {
-                    float tmp = x_iteration_array[j][0]/2;
+                    double tmp = x_iteration_array[j][0]/2;
                     x_iteration_array[j][0] = tmp;
                     x_iteration_array[j][1] = 0;
                     x_iteration_array[j][2] = 0;
-                    cout <<j<<":"<<x_iteration_array[j][0]<<endl;
-                }
+               }
             }
              
             // MINIMIZE Y
             // ----------
-            bool y_min = false;
+            int y_min = 0;
             // <incease y>
             tube_array[j][1] += y_iteration_array[j][0];
             if(calculateEnergy() > starting_energy)
@@ -190,9 +182,9 @@ void relaxNetwork()
                 starting_energy = calculateEnergy();
                 y_iteration_array[j][1] += 1;
                 y_iteration_array[j][2] = 0;
-                y_min = true;
+                y_min = 1;
             }
-            if(y_min == false)
+            if(y_min == 0)
             {
                 // <decrease y>
                 tube_array[j][1] += -1*y_iteration_array[j][0];
@@ -203,11 +195,11 @@ void relaxNetwork()
                     starting_energy = calculateEnergy();
                     y_iteration_array[j][2] += 1;
                     y_iteration_array[j][1] = 0;
-                    y_min = true;
+                    y_min = 1;
                 }
-                if(y_min == false)
+                if(y_min == 0)
                 {
-                    float tmp = y_iteration_array[j][0]/2;
+                    double tmp = y_iteration_array[j][0]/2;
                     y_iteration_array[j][0] = tmp;
                     y_iteration_array[j][1] = 0;
                     y_iteration_array[j][2] = 0;
@@ -216,7 +208,7 @@ void relaxNetwork()
 
             // MINIMIZE THETA
             // --------------
-            bool theta_min = false;
+            int theta_min = 0;
             // <incease theta>
             tube_array[j][2] += theta_iteration_array[j][0];
             if(calculateEnergy() > starting_energy)
@@ -226,9 +218,9 @@ void relaxNetwork()
                 starting_energy = calculateEnergy();
                 theta_iteration_array[j][1] += 1;
                 theta_iteration_array[j][2] = 0;
-                theta_min = true;
+                theta_min = 1;
             }
-            if(theta_min == false)
+            if(theta_min == 0)
             {
                 // <decrease theta>
                 tube_array[j][2] += -1*theta_iteration_array[j][0];
@@ -239,11 +231,11 @@ void relaxNetwork()
                     starting_energy = calculateEnergy();
                     theta_iteration_array[j][2] += 1;
                     theta_iteration_array[j][1] = 0;
-                    theta_min = true;
+                    theta_min = 1;
                 }
-                if(theta_min == false)
+                if(theta_min == 0)
                 {
-                    float tmp = theta_iteration_array[j][0]/2;
+                    double tmp = theta_iteration_array[j][0]/2;
                     theta_iteration_array[j][0] = tmp;
                     theta_iteration_array[j][1] = 0;
                     theta_iteration_array[j][2] = 0;
@@ -256,28 +248,26 @@ void relaxNetwork()
 // TODO 
 // ------------
 // void compressNetwork()
-// float calculateCurrent()
+// double calculateCurrent()
 // ------------
 
-int main ()
-{
+void Initialize(){
     srand(time(0));
    
-    float max_angle = M_PI/2;
-    float min_angle = -M_PI/2;
-    float energy;
+    double max_angle = M_PI/2;
+    double min_angle = -M_PI/2;
+ 
 
     // Create the tubes.
     for(int i = 0; i < tube_count; i++)
     {
         // Random variables
-        float angle = (min_angle-max_angle)*(float)rand()/(float)(RAND_MAX)+max_angle;
-        float x_cm = field_size*(float)rand()/(float)(RAND_MAX);
-        float y_cm = field_size*(float)rand()/(float)(RAND_MAX);
-        float length = 3-(float)rand()/(float)(RAND_MAX);
+        double angle = (min_angle-max_angle)*(double)rand()/(double)(RAND_MAX)+max_angle;
+        double x_cm = field_size*(double)rand()/(double)(RAND_MAX);
+        double y_cm = field_size*(double)rand()/(double)(RAND_MAX);
+        double length = 3-(double)rand()/(double)(RAND_MAX);
       
         // Populate the tube array.
-        tube_array[i] = new float[4];
         tube_array[i][0] = x_cm;
         tube_array[i][1] = y_cm;
         tube_array[i][2] = angle;
@@ -285,25 +275,51 @@ int main ()
 
         // (P) O------------O (Q) ( Px < Qx )
         // populate the initial endpoint arrays.
-        p_initial[i] = new float[2];
-        q_initial[i] = new float[2];
         p_initial[i][0] = x_cm - abs(length*cos(angle));
-        q_initial[i][0] = x_cm + abs(length*cos(angle));
+        p_initial[i][2] = x_cm + abs(length*cos(angle));
         if(tan(angle) >= 0)
         {
             p_initial[i][1] = y_cm - abs(length*sin(angle));
-            q_initial[i][1] = y_cm + abs(length*sin(angle));
+            p_initial[i][3] = y_cm + abs(length*sin(angle));
         }
         else
         {
             p_initial[i][1] = y_cm + abs(length*sin(angle));
-            q_initial[i][1] = y_cm - abs(length*sin(angle));
+            p_initial[i][3] = y_cm - abs(length*sin(angle));
         }
     }
-    
-    energy = calculateEnergy();
-    cout << energy << endl;
-    relaxNetwork();
-    return 0;
+}
+
+void GUI(){
+  static int two=2;
+  static char Name[tube_count][50];
+  for (int i=0;i<tube_count;i++){
+    sprintf(Name[i],"tube %i",i);
+    DefineGraphN_RxR(Name[i],p_initial[i],&two,NULL);
+  }
+  StartMenu("Nanotubes",1);
+  DefineDouble("Energy",&energy);
+  DefineGraph(curve2d_,"Tubes");
+  DefineFunction("Initialize",&Initialize);
+  DefineBool("Pause",&pause);
+  DefineBool("Single Step",&sstep);
+  DefineBool("Done",&done);
+  EndMenu();
+}
+
+
+int main ()
+{
+  Initialize();
+  GUI();
+  while (!done){
+    Events(1);
+    DrawGraphs();
+    if (!(pause||sstep)){
+      sstep=0;
+      energy = calculateEnergy();
+      relaxNetwork();
+    }
+  }
 }
 
