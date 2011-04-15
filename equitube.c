@@ -319,7 +319,7 @@ int main ()
       sstep=0;
       energy = calculateEnergy();
       relaxNetwork();
-    }
+    } else {sleep(1);}
   }
 }
 
