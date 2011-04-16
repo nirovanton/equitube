@@ -1,1 +1,76 @@
-This is where I tell you what to do..
+  This file contains information about the individual functions
+within equitube.c The functions explanations are listed within
+this file alphabetically.
+
+
+
+double calculateCurrent()
+==================================
+#TODO
+
+
+double calculateEnergy()
+==================================
+  calculateEnergy() begins by cycling through each tube in the
+array. It uses the current endpoint positions and the initial
+endpoint positions to calculate the spring potential energy
+for each tube. It then enters into a nested for-loop and begins
+determining the intersects for each tube and the resulting
+van der waals potentials. It adds the spring and van der waals
+together and returns the total energy of the system.
+
+
+void compressNetwork()
+==================================
+  compressNetwork() is a simple function that generates a
+displacement for the x coordinate of the center of mass for
+each tube. This displacement is a function of the distance from
+the center of the field. It goes to zero as the center of mass
+approaches the center of the field. This divergence addresses
+the risk of tubes oscillating about the center of the field.
+
+
+void GUI()
+==================================
+  GUI() specifies the settings and graphical output used when
+implementing the newgraph code.
+
+
+void Initialize()
+==================================
+  This function prepares the simulation by initializing these:
+
+1. Randomly generates the angle, center of mass, and length of
+   each tube.
+2. Generates the inital iteration array values that that used
+   for the relaxNetwork() function.
+3. Polulates tube_array with the random variables.
+4. Populates p_initial with the inital end points for each
+   tube within the tube_array.
+
+
+int main()
+==================================
+  The main function for the program.
+
+
+void relaxNetwork()
+==================================
+  Each tube has 3 coordinates, X_cm, Y_cm, and theta.
+This function begins be checking whether or not the iteration
+values are too small, and increasing them if they are. It knows
+they are too small if it had to increase or decrease a coordinate
+at least 5 consecutive times.
+  After the iteration sizes have been addressed, it goes through
+each coordinate and does the following:
+
+1. Decrease the value of the coordinate by an incremental amount,
+2. Call calculateEnergy(), if the energy has decreased: continue
+3. If decreasing didnt lower the energy, try increasing the value
+   of the coordinate and call calculateEnergy() again.
+4. If both increasing and decreasing the coordinate increase the
+   energy, then cut the incremental value in half and continue to
+   the next coordinate
+
+
+
