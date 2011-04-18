@@ -25,14 +25,15 @@
 
 //GLOBALS 
 //=========================================
-#define tube_count 10
+#define tube_count 2
 int field_size = 10;
 double energy;
 double radius = 1.0;
 double vand_const = 1.0;
 double spring_const = 1.0;
 double tube_array[tube_count][4];
-double p_initial[tube_count][4];
+double p_initial[tube_count][4], p_gr[tube_count][4];
+int pgr_req=0;
 double iteration_array[tube_count][9];
 int done=0,pause=1,sstep=1;
 //=========================================
@@ -99,31 +100,34 @@ void relaxNetwork()
     double starting_energy = calculateEnergy();
     for(int j = 0; j < tube_count; j++)
     {
+        double tmp = 0.0;
         // ADJUST THE ITERATIONS
         // ---------------------
         if(iteration_array[j][1] > 4 || iteration_array[j][2] > 4)
         {
-            double tmp = iteration_array[j][0]+.25*iteration_array[j][0];
+            tmp = iteration_array[j][0]+.25*iteration_array[j][0];
             iteration_array[j][0] = tmp;
         }
         if(iteration_array[j][4] > 4 || iteration_array[j][5] > 4)
         {
-            double tmp = iteration_array[j][3]+.25*iteration_array[j][3];
+            tmp = iteration_array[j][3]+.25*iteration_array[j][3];
             iteration_array[j][3] = tmp;
         }
         if(iteration_array[j][7] > 4 || iteration_array[j][8] > 4)
         {
-            double tmp = iteration_array[j][6]+.25*iteration_array[j][6];
+            tmp = iteration_array[j][6]+.25*iteration_array[j][6];
             iteration_array[j][6] = tmp;
         }
-    
+   
+
         // MINIMIZE X
         // ----------
         int x_min = 0;
         // <incease x>
-        tube_array[j][0] += iteration_array[j][0];
+        tmp = tube_array[j][0] + iteration_array[j][0];
+        tube_array[j][0] = tmp;
         if(calculateEnergy() > starting_energy)
-            tube_array[j][0] += -1*iteration_array[j][0];
+            tube_array[j][0] = tmp - iteration_array[j][0];
         else if(calculateEnergy() <= starting_energy)
         {
             starting_energy = calculateEnergy();                
@@ -134,9 +138,10 @@ void relaxNetwork()
         if(x_min == 0)
         {
             // <decrease x>
-            tube_array[j][0] += -1*iteration_array[j][0];
+            tmp = tube_array[j][0] - iteration_array[j][0];
+            tube_array[j][0] = tmp;
             if(calculateEnergy() > starting_energy)
-                tube_array[j][0] += iteration_array[j][0];
+                tube_array[j][0] = tmp + iteration_array[j][0];
             else if(calculateEnergy() <= starting_energy)
             {
                 starting_energy = calculateEnergy();
@@ -146,7 +151,7 @@ void relaxNetwork()
             }
             if(x_min == 0)
             {
-                double tmp = iteration_array[j][0]/2;
+                tmp = iteration_array[j][0]/2;
                 iteration_array[j][0] = tmp;
                 iteration_array[j][1] = 0;
                 iteration_array[j][2] = 0;
@@ -157,9 +162,10 @@ void relaxNetwork()
         // ----------
         int y_min = 0;
         // <incease y>
-        tube_array[j][1] += iteration_array[j][3];
+        tmp = tube_array[j][1] + iteration_array[j][3];
+        tube_array[j][1] = tmp;
         if(calculateEnergy() > starting_energy)
-            tube_array[j][1] += -1*iteration_array[j][3];
+            tube_array[j][1] = tmp - iteration_array[j][3];
         if(calculateEnergy() <= starting_energy)
         {
             starting_energy = calculateEnergy();
@@ -170,9 +176,10 @@ void relaxNetwork()
         if(y_min == 0)
         {
             // <decrease y>
-            tube_array[j][1] += -1*iteration_array[j][3];
+            tmp = tube_array[j][1] - iteration_array[j][3];
+            tube_array[j][1] = tmp;
             if(calculateEnergy() > starting_energy)
-                tube_array[j][1] += iteration_array[j][3];
+                tube_array[j][1] = tmp + iteration_array[j][3];
             if(calculateEnergy() <= starting_energy)
             {
                 starting_energy = calculateEnergy();
@@ -182,7 +189,7 @@ void relaxNetwork()
             }
             if(y_min == 0)
             {
-                double tmp = iteration_array[j][3]/2;
+                tmp = iteration_array[j][3]/2;
                 iteration_array[j][3] = tmp;
                 iteration_array[j][4] = 0;
                 iteration_array[j][5] = 0;
@@ -193,9 +200,10 @@ void relaxNetwork()
         // --------------
         int theta_min = 0;
         // <incease theta>
-        tube_array[j][2] += iteration_array[j][6];
+        tmp = tube_array[j][2] + iteration_array[j][6];
+        tube_array[j][2] = tmp;
         if(calculateEnergy() > starting_energy)
-            tube_array[j][2] += -1*iteration_array[j][6];
+            tube_array[j][2] = tmp - iteration_array[j][6];
         if(calculateEnergy() <= starting_energy)
         {
             starting_energy = calculateEnergy();
@@ -206,9 +214,10 @@ void relaxNetwork()
         if(theta_min == 0)
         {
             // <decrease theta>
-            tube_array[j][2] += -1*iteration_array[j][6];
+            tmp = tube_array[j][2] - iteration_array[j][6];
+            tube_array[j][2] += tmp;
             if(calculateEnergy() > starting_energy)
-                tube_array[j][2] += iteration_array[j][6];
+                tube_array[j][2] = tmp + iteration_array[j][6];
             if(calculateEnergy() <= starting_energy)
             {
                 starting_energy = calculateEnergy();
@@ -218,7 +227,7 @@ void relaxNetwork()
             }
             if(theta_min == 0)
             {
-                double tmp = iteration_array[j][6]/2;
+                tmp = iteration_array[j][6]/2;
                 iteration_array[j][6] = tmp;
                 iteration_array[j][7] = 0;
                 iteration_array[j][8] = 0;
@@ -237,16 +246,17 @@ void compressNetwork()
 {
     for(int a = 0; a < tube_count; a++)
     {
+        double tmp = 0.0;
         if(tube_array[a][0]<field_size/2)
         {
             double offset = 1-2*tube_array[a][0]/field_size;
-            double tmp = tube_array[a][0] + offset;
+            tmp = tube_array[a][0] + offset;
             tube_array[a][0] = tmp;
         }
         if(tube_array[a][0]>field_size/2)
         {
             double offset = 1-2*(field_size-tube_array[a][0])/field_size;
-            double tmp = tube_array[a][0] - offset;
+            tmp = tube_array[a][0] - offset;
             tube_array[a][0] = tmp;
         }
     }
@@ -306,6 +316,32 @@ void Initialize()
     }
 }
 
+void getGraphics()
+{
+    if (pgr_req)
+    {
+        pgr_req=0;
+        /* actually populate p_gr */
+        for (int i=0;i<tube_count;i++)
+        {
+            double xcm = tube_array[i][0], ycm = tube_array[i][1];
+            double theta = tube_array[i][2], len = tube_array[i][3];
+            p_gr[i][0]= xcm - fabs(len*cos(theta));
+            p_gr[i][2]= xcm + fabs(len*cos(theta));
+            if(tan(theta) >= 0)
+            {
+                p_gr[i][1] = ycm - fabs(len*sin(theta));
+                p_gr[i][3] = ycm + fabs(len*sin(theta));
+            }
+            else
+            {
+                p_gr[i][1] = ycm + fabs(len*sin(theta));
+                p_gr[i][3] = ycm - fabs(len*sin(theta));
+            }
+        }
+    }
+}
+
 
 void GUI()
 {
@@ -315,7 +351,7 @@ void GUI()
     for(int i=0;i<tube_count;i++)
     {
         sprintf(Name[i],"tube %i",i);
-        DefineGraphN_RxR(Name[i],p_initial[i],&two,NULL);
+        DefineGraphN_RxR(Name[i],p_gr[i],&two,&pgr_req);
     }
 
     StartMenu("Nanotubes",1);
@@ -338,13 +374,15 @@ int main ()
     while (!done)
     {
         Events(1);
+	    getGraphics();
         DrawGraphs();
         if (!(pause||sstep))
         {
             sstep=0;
             energy = calculateEnergy();
-            compressNetwork();
-            //relaxNetwork();
+            //compressNetwork();
+            sleep(1);
+            relaxNetwork();
         } 
         else
             sleep(1);
