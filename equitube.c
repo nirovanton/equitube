@@ -26,8 +26,8 @@
 
 //GLOBALS 
 //=========================================
-#define tube_count 2
-int field_size = 10;
+#define tube_count 10
+double field_size = 10;
 double energy;
 double radius = 1.0;
 double vand_const = 10.0;
@@ -35,7 +35,7 @@ double spring_const = 1.0;
 double tube_array[tube_count][4];
 double p_initial[tube_count][4], p_gr[tube_count][4];
 int steps = 1, mstep = 0;
-int pgr_req = 0, compress = 0;
+int pgr_req = 0, compress = 0, decompress = 0;
 double iteration_array[tube_count][9];
 int done = 0, poz = 1, sstep = 1, rlx = 0;
 //=========================================
@@ -112,13 +112,19 @@ void relaxNetwork()
         // ---------------------
         if(iteration_array[j][1] > 9 || iteration_array[j][2] > 9)
         {
-            tmp = iteration_array[j][0]+.025*iteration_array[j][0];
-            iteration_array[j][0] = tmp;
+            if(iteration_array[j][0] < 1)
+            {
+                tmp = iteration_array[j][0]+.025*iteration_array[j][0];
+                iteration_array[j][0] = tmp;
+            }
         }
         if(iteration_array[j][4] > 9 || iteration_array[j][5] > 9)
         {
-            tmp = iteration_array[j][3]+.025*iteration_array[j][3];
-            iteration_array[j][3] = tmp;
+            if(iteration_array[j][3] < 1)
+            {
+                tmp = iteration_array[j][3]+.025*iteration_array[j][3];
+                iteration_array[j][3] = tmp;
+            }
         }
         if(iteration_array[j][7] > 9 || iteration_array[j][8] > 9)
         {
@@ -278,8 +284,10 @@ void relaxNetwork()
 // ------------
 
 
-void compressNetwork()
-{
+void compressNetwork(int direction)
+{     
+    // direction = 1 compress
+    // direction = 0 decompress
     double tmp;
     double ptmp;
     double qtmp;
@@ -289,6 +297,8 @@ void compressNetwork()
         if(tube_array[a][0]<field_size/2)
         {
             offset = 1-2*tube_array[a][0]/field_size;
+            if(direction == 0)
+                offset = -1*offset;
             tmp = tube_array[a][0] + offset;
             ptmp = p_initial[a][0] + offset;
             qtmp = p_initial[a][2] + offset;
@@ -299,6 +309,8 @@ void compressNetwork()
         if(tube_array[a][0]>field_size/2)
         {
             offset = 1-2*(field_size-tube_array[a][0])/field_size;
+            if(direction == 0)
+                offset = -1*offset;
             tmp = tube_array[a][0] - offset;
             ptmp = p_initial[a][0] - offset;
             qtmp = p_initial[a][2] - offset;
@@ -409,11 +421,12 @@ void GUI()
     DefineGraph(curve2d_,"Tubes");
     DefineFunction("Initialize",&Initialize);
     DefineBool("Compress",&compress);
+    DefineBool("Decompress", &decompress);
     DefineBool("Pause",&poz);
     DefineBool("Single Step",&sstep);
     DefineInt("Steps", &steps);
     DefineBool("multi-step", &mstep);
-    DefineBool("RELAXED:", &rlx);
+    DefineDouble("TUBE1_x", &tube_array[0][0]);
     DefineBool("Done",&done);
     EndMenu();
 }
@@ -437,8 +450,13 @@ int main ()
                 energy = calculateEnergy();
                 if(compress)
                 {   
-                    compressNetwork();
+                    compressNetwork(0);
                     compress = 0;
+                }
+                if(decompress)
+                {
+                    compressNetwork(0);
+                    decompress = 0;
                 }
                 //sleep(1);
                 relaxNetwork();
@@ -451,8 +469,13 @@ int main ()
             energy = calculateEnergy();
             if(compress)
             {
-                compressNetwork();
+                compressNetwork(1);
                 compress = 0;
+            }
+            if(decompress)
+            {
+                compressNetwork(0);
+                decompress = 0;
             }
             //sleep(1);
             relaxNetwork();
