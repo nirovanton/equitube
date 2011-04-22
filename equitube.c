@@ -26,7 +26,7 @@
 
 //GLOBALS 
 //=========================================
-#define tube_count 10
+#define tube_count 4 
 double field_size = 10;
 double energy;
 double radius = 1.0;
@@ -408,21 +408,21 @@ void GUI()
     static int tubecount=tube_count;
     static char Name[50];
 
-    SetDefaultColor(0);
+    SetDefaultColor(1);
     SetDefaultShape(3);
     SetDefaultFill(1);
-    SetDefaultSize(0.7);
+    SetDefaultSize(0.6);
     SetDefaultLineType(1);
     sprintf(Name,"Tubes");
     DefineGraphN_RxRxRxR(Name,&tube_array[0][0],&tubecount,NULL);
-    SetDefaultColor(1);
+    SetDefaultColor(2);
     SetDefaultShape(4);
     SetDefaultFill(1);
-    SetDefaultSize(0.7);
+    SetDefaultSize(0.5);
     SetDefaultLineType(1);
     sprintf(Name,"Tubes Initial");
     DefineGraphN_RxRxRxR(Name,&tube_array_init[0][0],&tubecount,NULL);
-    SetDefaultScaling(0,-10,-10,10,10);
+    SetDefaultScaling(0,0,0,10,10);
 
     StartMenu("Nanotubes",1);
     DefineDouble("VDW", &vand_const);
@@ -431,6 +431,7 @@ void GUI()
     DefineGraph(curve2d_,"Tubes");
     DefineFunction("Initialize",&Initialize);
     DefineBool("Compress",&compress);
+    DefineBool("Decompress",&decompress);
     DefineBool("Pause",&poz);
     DefineBool("Single Step",&sstep);
     DefineInt("Steps", &steps);
