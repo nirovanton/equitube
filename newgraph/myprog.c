@@ -33,13 +33,16 @@ e-mail: Alexander.Wagner@ndsu.nodak.edu
 #define cdim 500
 #define Xdim 30
 #define Ydim 30
+#define tubedim 50
 
-static int sinsinreq,sinexpreq,sinreq,cosreq,creq,vecreq,treq;
+static int sinsinreq,sinexpreq,sinreq,cosreq,creq,vecreq,treq,tubereq;
 static int continuous=1,next=0,newdata=1;
 static int sinsinxdim=Xdim,sinsinydim=Ydim,sindim=onedim,cosdim=onedim2;
 static int vecxdim=Xdim,vecydim=Ydim,txdim=Xdim,tydim=Ydim;
 static int mycdim=cdim;
 static  double sinsindata[Xdim*Ydim],*sinsindatap;
+static  double tube[tubedim][4];
+static int notube = tubedim;
 static  double sinexpdata[Xdim*Ydim];
 static  double vecdata[Xdim*Ydim*2];
 static  double sindata[onedim],*sindatap,cosdata[onedim2*2],cdata[cdim*2];
@@ -174,6 +177,15 @@ void providedata() {
 	mytensor(x,y,&tdata[(x*Ydim+y)*3]);
     treq=0;
   }
+  if (tubereq){
+    tubereq=0;
+    for (x=0;x<tubedim;x++){
+      tube[x][0] = sin(2*3.14*x/tubedim * sin(0.001*xtime));
+      tube[x][1] = cos(2*3.14*x/tubedim *sin(0.001*xtime));
+      tube[x][2] = 2*3.14*x/tubedim * 0.001*xtime;
+      tube[x][3] = cos(2*3.14*x/tubedim);
+    }
+  }
   if (Cont1req){
     DefineContour();
   }
@@ -222,9 +234,10 @@ int main(int argc,char **argv){
   SetDefaultLineType(0);
   DefineGraphN_RxR("Point",&Point[0],&One,NULL);
   DefineGraphN_RxR("(Sin,Sin)",&cdata[0],&mycdim,&creq);
+  DefineGraphN_RxRxRxR("tube",&tube[0],&notube,&tubereq);
   DefineGraphNxN_R("(Sin[x]*Sin[y])",&sinsindata[0],
                    &sinsinxdim,&sinsinydim,&sinsinreq);
-  sinsindatap=&sinsindata;
+  sinsindatap=sinsindata;
   DefineGraphNxN_Rp("(Sin[x]*Sin[y])p",&sinsindatap,
                    &sinsinxdim,&sinsinydim,&sinsinreq);
   DefineGraphNxN_R("(Sin[x]*exp[-y^2])",&sinexpdata[0],
@@ -235,6 +248,7 @@ int main(int argc,char **argv){
                    &txdim,&tydim,&treq);
   DefineGraphContour3d("(wuerfel)",&Cont1,
                    &Contxdim,&Contydim,&Contzdim,&Cont1req);
+  SetDefaultScaling(0,-2,-2,2,2);
 
   StartMenu("Test menu",1);
     DefineBool("Continuous",&continuous);

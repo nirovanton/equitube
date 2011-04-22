@@ -32,7 +32,7 @@ LD	      = cc
 
 AR            = ar
 
-LIBS	      =  -L/usr/X11R6/lib -lm -lX11 -L. -l$(MYLIB) 
+LIBS	      =  -L/usr/X11R6/lib -lm -L. -l$(MYLIB) -lX11  
 
 MAKEFILE      = Makefile
 

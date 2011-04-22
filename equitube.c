@@ -32,7 +32,7 @@ double energy;
 double radius = 1.0;
 double vand_const = 10.0;
 double spring_const = 1.0;
-double tube_array[tube_count][4];
+double tube_array[tube_count][4], tube_array_init[tube_count][4];
 double p_initial[tube_count][4], p_gr[tube_count][4];
 int steps = 1, mstep = 0;
 int pgr_req = 0, compress = 0, decompress = 0;
@@ -354,10 +354,10 @@ void Initialize()
         iteration_array[i][8] = 0;
 
         // Populate the tube array.
-        tube_array[i][0] = x_cm;
-        tube_array[i][1] = y_cm;
-        tube_array[i][2] = angle;
-        tube_array[i][3] = length;
+        tube_array[i][0] =tube_array_init[i][0] = x_cm;
+        tube_array[i][1] =tube_array_init[i][1] = y_cm;
+        tube_array[i][2] =tube_array_init[i][2] = angle;
+        tube_array[i][3] =tube_array_init[i][3] = length;
 
         // (P) O------------O (Q) ( Px < Qx )
         // populate the initial endpoint arrays.
@@ -402,17 +402,27 @@ void getGraphics()
     }
 }
 
-
 void GUI()
 {
     static int two=2;
-    static char Name[tube_count][50];
-    
-    for(int i=0;i<tube_count;i++)
-    {
-        sprintf(Name[i],"tube %i",i);
-        DefineGraphN_RxR(Name[i],p_gr[i],&two,&pgr_req);
-    }
+    static int tubecount=tube_count;
+    static char Name[50];
+
+    SetDefaultColor(0);
+    SetDefaultShape(3);
+    SetDefaultFill(1);
+    SetDefaultSize(0.7);
+    SetDefaultLineType(1);
+    sprintf(Name,"Tubes");
+    DefineGraphN_RxRxRxR(Name,&tube_array[0][0],&tubecount,NULL);
+    SetDefaultColor(1);
+    SetDefaultShape(4);
+    SetDefaultFill(1);
+    SetDefaultSize(0.7);
+    SetDefaultLineType(1);
+    sprintf(Name,"Tubes Initial");
+    DefineGraphN_RxRxRxR(Name,&tube_array_init[0][0],&tubecount,NULL);
+    SetDefaultScaling(0,-10,-10,10,10);
 
     StartMenu("Nanotubes",1);
     DefineDouble("VDW", &vand_const);
@@ -421,12 +431,11 @@ void GUI()
     DefineGraph(curve2d_,"Tubes");
     DefineFunction("Initialize",&Initialize);
     DefineBool("Compress",&compress);
-    DefineBool("Decompress", &decompress);
     DefineBool("Pause",&poz);
     DefineBool("Single Step",&sstep);
     DefineInt("Steps", &steps);
     DefineBool("multi-step", &mstep);
-    DefineDouble("TUBE1_x", &tube_array[0][0]);
+    DefineBool("RELAXED:", &rlx);
     DefineBool("Done",&done);
     EndMenu();
 }

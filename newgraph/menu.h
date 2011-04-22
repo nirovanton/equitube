@@ -210,6 +210,9 @@ typedef struct mywindowstruct_ {
 } mywindowstruct;
 */
 
+
+extern void SetDefaultScaling(int scaling, double xmin, double ymin, double xmax, double ymax);
+
 extern void zeichne_menutext(Display *myd,Window w,GC mygc,
 			     XFontStruct *font,char *str);
 extern void unmapwindow(Display *myd,mywindow *mw);

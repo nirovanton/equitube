@@ -70,6 +70,17 @@ static int nofoundfonts;
 static XFontStruct* menfonts[MAXFONTS];
 static XFontStruct *defaultfont;
 
+static int curve2dScaling = 1;
+static double curve2dxmin=-1,curve2dxmax=1,curve2dymin=-1,curve2dymax=1;
+
+void SetDefaultScaling(int scaling, double xmin, double ymin, double xmax, double ymax){
+  curve2dScaling=scaling;
+  curve2dxmin=xmin;
+  curve2dxmax=xmax;
+  curve2dymin=ymin;
+  curve2dymax=ymax;
+}
+
 
 void zeichne_menutext(Display *myd,Window w,GC mygc,
 		      XFontStruct *font,char *str)
@@ -333,7 +344,7 @@ void initfonts(Display **myd)
 
   char **allfonts;
   char *myfontname[5] = {"5x8","6x9","6x10","8x13","9x15"};
-  /*  char fontbasename[] = {"helvetica"};*/
+  /* char fontbasename[] = {"helvetica"};*/
   /* char fontbasename[] = {"times"};*/
   char fontbasename[] = {"*"};
   char fontpattern[300];
@@ -1063,14 +1074,20 @@ void genericmenu(mywindow *mw,int i,int front,int button,int Shift,int Ctrl)
     for (k=0;(mw->menu->mydata[i].md.choice.mygraph->anzN_R
 	      +mw->menu->mydata[i].md.choice.mygraph->anzN_Rp)>k;k++)
       tmpzd->graph2d.draw1[k]=0;
+    tmpzd->graph2d.draw2=(int *) 
+      malloc((mw->menu->mydata[i].md.choice.mygraph->anzN_RxRxRxR)*sizeof(int));
+    for (k=0;(mw->menu->mydata[i].md.choice.mygraph->anzN_R)>k;k++)
+      tmpzd->graph2d.draw2[k]=0;
 
     tmpzd->graph2d.rough=1;
     tmpzd->graph2d.copy=1;
-    tmpzd->graph2d.scaling=1;
     tmpzd->graph2d.logx=0;
     tmpzd->graph2d.logy=0;
-    tmpzd->graph2d.xmin=tmpzd->graph2d.ymin=-1;
-    tmpzd->graph2d.xmax=tmpzd->graph2d.ymax= 1;
+    tmpzd->graph2d.scaling=curve2dScaling;
+    tmpzd->graph2d.xmin=curve2dxmin;
+    tmpzd->graph2d.ymin=curve2dymin;
+    tmpzd->graph2d.xmax=curve2dxmax;
+    tmpzd->graph2d.ymax=curve2dymax;
 
     tmpmenu=mw->menu; /* needed in case of remapping of windows. 
 			 See below. */
@@ -1166,6 +1183,25 @@ void genericmenu(mywindow *mw,int i,int front,int button,int Shift,int Ctrl)
 		   &mw->menu->mydata[i].md.choice.mygraph->dN_RxRp[j].size);
       DefineBool("Fill",
 		 &mw->menu->mydata[i].md.choice.mygraph->dN_RxRp[j].fill);
+      EndMenu();
+    }
+    for (k=0;k<mw->menu->mydata[i].md.choice.mygraph->anzN_RxRxRxR;k++){
+      StartBoolMenu(mw->menu->mydata[i].md.choice.mygraph->N_RxRxRxRname[k],
+		 &tmpzd->graph2d.draw2[k]);
+      DefineMod("Color",
+		&mw->menu->mydata[i].md.choice.mygraph->dN_RxRxRxR[k].color,
+		NumberOfColors());
+      DefineMod("Line Type",
+		&mw->menu->mydata[i].md.choice.mygraph->dN_RxRxRxR[k].linetype,
+		NumberOfLinetypes);
+      DefineMod("Shape",
+		&mw->menu->mydata[i].md.choice.mygraph->dN_RxRxRxR[k].shape,
+		NumberOfShapes);
+		
+      DefineDouble("Size",
+		   &mw->menu->mydata[i].md.choice.mygraph->dN_RxRxRxR[k].size);
+      DefineBool("Fill",
+		 &mw->menu->mydata[i].md.choice.mygraph->dN_RxRxRxR[k].fill);
       EndMenu();
     }
     DefineItem(newdraw_);
@@ -1302,8 +1338,14 @@ void genericmenu(mywindow *mw,int i,int front,int button,int Shift,int Ctrl)
     for (k=0;k<mw->menu->mydata[i].md.choice.mygraph->anzNxN_RxRxRt;k++)
       tmpzd->nz2.rough_t[k]=1;
 
+    tmpzd->nz2.drawtwodensity=0;
+    tmpzd->nz2.d1=0;
+    tmpzd->nz2.d2=0;
+
     tmpzd->nz2.nocuts=1;
     tmpzd->nz2.maxcuts=100;
+    tmpzd->nz2.nocuts1=1;
+    tmpzd->nz2.maxcuts1=100;
     tmpzd->nz2.adjustcuts=1;
     tmpzd->nz2.DensityLegend=1;
     tmpzd->nz2.BarInset=0;
@@ -1313,6 +1355,7 @@ void genericmenu(mywindow *mw,int i,int front,int button,int Shift,int Ctrl)
     tmpzd->nz2.BarYOfs=0;
     tmpzd->nz2.adjustdensity=1;
     tmpzd->nz2.cut = (double *) malloc(tmpzd->nz2.maxcuts*sizeof(double));
+    tmpzd->nz2.cut1 = (double *) malloc(tmpzd->nz2.maxcuts1*sizeof(double));
     tmpzd->nz2.NewXsize=1;
     tmpzd->nz2.NewYsize=1;
     tmpzd->nz2.DoCenter=0;
@@ -1342,12 +1385,19 @@ void genericmenu(mywindow *mw,int i,int front,int button,int Shift,int Ctrl)
     DefineDouble("Bar Height",&tmpzd->nz2.BarHeight);
     DefineDouble("Density Min",&tmpzd->nz2.density_min);
     DefineDouble("Density Max",&tmpzd->nz2.density_max);
+    DefineDouble("Two: Min1",&tmpzd->nz2.density1_min);
+    DefineDouble("Two: Max1",&tmpzd->nz2.density1_max);
+    DefineDouble("Two: Min2",&tmpzd->nz2.density2_min);
+    DefineDouble("Two: Max2",&tmpzd->nz2.density2_max);
     DefineBool("Adjust Density",&tmpzd->nz2.adjustdensity);
     DefineDoubleArrp("Contour",&tmpzd->nz2.cut,&tmpzd->nz2.nocuts);
+    DefineDoubleArrp("Contour 2",&tmpzd->nz2.cut1,&tmpzd->nz2.nocuts1);
     DefineBool("Adjust cuts",&tmpzd->nz2.adjustcuts);
     EndMenu();
     /* We also want a dynamically generated menu for the contour lines */
     DefineMod("Density",&tmpzd->nz2.density,3);
+    DefineBool("Two Density ",&tmpzd->nz2.drawtwodensity);
+
     StartMenu("Magnify",0);
     DefineInt("New X size",&tmpzd->nz2.NewXsize);
     DefineInt("New Y size",&tmpzd->nz2.NewYsize);

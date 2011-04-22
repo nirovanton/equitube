@@ -215,4 +215,64 @@ void draw2dgraph(int xsize,int ysize,double **gp,
 		   to use several of these graphs in one graphic! */
 }
 
+void draw2dtubes(int xsize,int ysize,double **gp, 
+		 dim1 *no, int *draw, int nograph,
+		 int comments,  
+		 double xmin,double xmax,int logx,
+                 double ymin,double ymax,int logy, 
+		 int type,grdat *gr)
+{
+  int i,j,xofs,yofs;
+  double x1,y1,x2,y2;
+  XPoint *myp;
+
+  Koordinatensystem2D(schwarz(),xmin,xmax,logx,ymin,ymax,logy,&xofs,&yofs,
+		      &xsize,&ysize,"X","Y","","");
+  myp= (XPoint *) malloc(2*sizeof(XPoint));
+  if (myp==NULL) fprintf(stderr,"draw2dgraph:156 XPoint->malloc failed");
+  for (i=0;i<nograph;i++){
+    if (draw[i]){
+      for (j=0;j<*no[i][0];j++){
+	x1=gp[i][j*4+0]+gp[i][j*4+3]*cos(gp[i][j*4+2]);
+	y1=gp[i][j*4+1]+gp[i][j*4+3]*sin(gp[i][j*4+2]);
+	x2=gp[i][j*4+0]-gp[i][j*4+3]*cos(gp[i][j*4+2]);
+	y2=gp[i][j*4+1]-gp[i][j*4+3]*sin(gp[i][j*4+2]);
+	if (logx){
+	  myp[0].x=xofs+(log(fmax(fmin(x1,xmax),xmin))-log(xmin))/(log(xmax)-log(xmin))*xsize;
+	  myp[1].x=xofs+(log(fmax(fmin(x2,xmax),xmin))-log(xmin))/(log(xmax)-log(xmin))*xsize;
+	}
+	else {
+	  myp[0].x=xofs+(fmax(fmin(x1,xmax),xmin)-xmin)/(xmax-xmin)*xsize;
+	  myp[1].x=xofs+(fmax(fmin(x2,xmax),xmin)-xmin)/(xmax-xmin)*xsize;
+	}
+	if (logy){
+	  myp[0].y=yofs+ysize-(log(fmax(fmin(y1,ymax),ymin))-log(ymin))/(log(ymax)-log(ymin))*ysize;
+	  myp[1].y=yofs+ysize-(log(fmax(fmin(y2,ymax),ymin))-log(ymin))/(log(ymax)-log(ymin))*ysize;
+	}
+	else {
+	  myp[0].y=yofs+ysize-(fmax(fmin(y1,ymax),ymin)-ymin)/(ymax-ymin)*ysize;
+	  myp[1].y=yofs+ysize-(fmax(fmin(y2,ymax),ymin)-ymin)/(ymax-ymin)*ysize;
+	}
+	if (gr[i].linetype & 1) myline_polygon(gr[i].color,myp,2);
+	switch (gr[i].shape){
+	case 0: break;
+	case UpTriangle: DrawUpTriangles(gr[i].color,myp,2,
+					 gr[i].size*xsize/100,gr[i].fill); break;
+	case DownTriangle: DrawDownTriangles(gr[i].color,myp,2,
+					     gr[i].size*xsize/100,gr[i].fill); break;
+	case Square: DrawSquare(gr[i].color,myp,2,
+				gr[i].size*xsize/100,gr[i].fill); break;
+	case Circle: DrawCircle(gr[i].color,myp,2,
+				gr[i].size*xsize/100,gr[i].fill); break;
+	default: printf("draw2dgraph: shape %i not defined",gr[i].shape);
+	}
+      }
+    }
+    
+  }
+  free(myp);
+  /*myshow();*/ /* This should be left up to neuzeichnen, since you may want 
+    to use several of these graphs in one graphic! */
+}
+
 

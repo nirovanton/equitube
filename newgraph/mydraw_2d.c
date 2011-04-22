@@ -89,6 +89,10 @@ void (*myfilledcircle)(int color, int x, int y, int r);
 void (*densityfield)(int nox, int noy,double zmin, double zmax,
 		     int  colmin, int colmax, double *f,
 		     int xofs, int yofs, int xsize, int ysize);
+void (*twodensityfield)(int nox, int noy,
+		      double z1min, double z1max,double z2min, double z2max,
+		      int colomin,int colx, int coly, double *f1, double *f2,
+		     int xofs, int yofs, int xsize, int ysize);
 
 void (*mytext)(int color,int x, int y,const char *text, int orient);
 void (*myselectfont)(int font, char *testtext, double length);
@@ -173,7 +177,7 @@ void Visual_Information(int *Class,unsigned long *red_mask,
 
 static  Bool   ColorInitialized=0;
 static  Colormap                mycmap;
-static int NumberOfCol,RampStart=0,RampEnd=0;
+static int NumberOfCol,RampStart=0,RampEnd=0,FieldStart=0,FieldX=0,FieldY=0;
 static  int Class;
 
 int ColorRampStart(){ return RampStart;}
@@ -181,7 +185,12 @@ int ColorRampEnd() {return RampEnd;}
 int NumberOfColors(){return NumberOfCol;}
 void SetColorRampStart(int i){RampStart=i;}
 void SetColorRampEnd  (int i){RampEnd =i;}
-
+void SetColorFieldStart(int i){FieldStart=i;}
+int ColorFieldStart(){return FieldStart;}
+void SetColorFieldX(int i){FieldX=i;}
+int ColorFieldX(){return FieldX;}
+void SetColorFieldY(int i){FieldY=i;}
+int ColorFieldY(){return FieldY;}
 
 int GetFreeColors(){
 #define PLANES 8 
@@ -202,7 +211,7 @@ int GetFreeColors(){
     return NumberOfCol;
   }
   else {
-    for (NumberOfCol=256;NumberOfCol>0;NumberOfCol--){
+    for (NumberOfCol=10256;NumberOfCol>0;NumberOfCol--){
       myresult= XAllocColorCells(mydisplay, mycmap, mycontig, myplane_masks,
 				 mynplanes, mypixels, NumberOfCol);
       if (myresult!=0) {
@@ -569,6 +578,98 @@ void densityfieldPS(int nox, int noy,
       fprintf(PSfile,"grestore\n\n");
     }
 }
+void twodensityfieldX(int nox, int noy,
+		      double z1min, double z1max,double z2min, double z2max,
+		      int colmin,int colx, int coly, double *f1, double *f2,
+		      int xofs, int yofs, int xsize, int ysize)
+{
+  int i,j,x,x1,y,y1,d1,d2;
+  XPoint xp[4];
+  double dx,dy;
+  
+  if ((z1min!=z1max)&&(z2min!=z2max))
+    {
+      yofs+=ysize;
+      dx=1.*xsize/(nox+1);
+      dy=1.*ysize/(noy+1);
+      for (i=0;i<nox;i++){
+	x=xofs+dx*(i+0.5);
+	x1=xofs+dx*(i+1.5);
+	for (j=0;j<noy;j++)
+	  {
+	    y= yofs-dy*(j+0.5);
+	    y1=yofs-dy*(j+1.5);
+	    xp[0].x=x;
+	    xp[0].y=y;
+	    xp[1].x=x;
+	    xp[1].y=y1;
+	    xp[2].x=x1;
+	    xp[2].y=y1;
+	    xp[3].x=x1;
+	    xp[3].y=y;
+	    d1=colx*(f1[i*noy+j]-z1min)/(z1max-z1min);
+	    d2=coly*(f2[i*noy+j]-z2min)/(z2max-z2min);
+	    if (isnormal(d1)){
+	    if (d1<0) d1=0;
+	    else if (d1>colx-1) d1=colx-1;
+	    } else d1=0;
+	    if (isnormal(d2)){
+	    if (d2<0) d2=0;
+	    else if (d2>coly-1) d2=coly-1;
+	    } else d2=0;
+	    mypolygon(colmin+d1*coly+d2,xp,4);
+	  }
+      }
+    }
+}
+
+void twodensityfieldPS(int nox, int noy,
+		       double z1min, double z1max,double z2min, double z2max,
+		       int  colmin, int colx,int coly, double *f1,double *f2,
+		       int xofs, int yofs, int xsize, int ysize)
+{
+  int i,j,col,d1,d2;
+  int r,g,b;
+
+
+  if ((z1min!=z1max)&&(z2min!=z2max))
+    {
+      yofs+=ysize;
+      PSxlimit(xofs+0.5*xsize/(nox+1));
+      PSylimit(yofs-0.5*ysize/(noy+1));
+      PSxlimit(xofs+xsize*(1-.5/(nox+1)));
+      PSylimit(yofs-ysize*(1-.5/(noy+1)));
+	       
+      fprintf(PSfile,"gsave\n");
+      fprintf(PSfile,"/picstr %i string def\n",nox*3);
+      fprintf(PSfile,"%e %e translate\n",
+	      xofs+0.5*xsize/(nox+1),-yofs+0.5*ysize/(noy+1));
+      fprintf(PSfile,"%e %e scale\n",
+	      xsize*(1-1.0/(nox+1)),ysize*(1-1.0/(noy+1)));
+      fprintf(PSfile,"%% Image geometry\n %i %i 8\n",nox,noy);
+      fprintf(PSfile,"%% Transformation Matrix\n [%i 0 0 %i 0 0]\n",
+	      nox,noy);
+      fprintf(PSfile,"{currentfile picstr readhexstring pop}\n");
+      fprintf(PSfile,"false 3\ncolorimage\n");
+      for (j=0;j<noy;j++){
+	for (i=0;i<nox;i++){
+	    d1=colx*(f1[i*noy+j]-z1min)/(z1max-z1min);
+	    if (d1<0) d1=0;
+	    else if (d1>colx-1) d1=colx-1;
+	    d2=colx*(f2[i*noy+j]-z2min)/(z2max-z2min);
+	    if (d2<0) d2=0;
+	    else if (d2>coly-1) d2=coly-1;
+	    col=colmin+d1*coly+d2;
+	    r=myPSmap[col].red*255;
+	    g=myPSmap[col].green*255;
+	    b=myPSmap[col].blue*255;
+	    fprintf(PSfile,"%02x%02x%02x",r,g,b);
+	}
+	fprintf(PSfile,"\n");
+      }
+      fprintf(PSfile,"grestore\n\n");
+    }
+}
 
 
 struct			font_struct {	int l;
@@ -594,8 +695,8 @@ double                  psfontalpha;
 
 void myXfontsinit(void)
 {
-  
- char **allfonts;
+
+  char **allfonts;
   char *myfontname[5] = {"5x8","6x9","6x10","8x13","9x15"};
   char fontbasename[] = {"*"};
   char fontpattern[300];
@@ -611,15 +712,16 @@ void myXfontsinit(void)
     allfonts = XListFonts(mydisplay, fontpattern, NOFONTS, &FOUNDFONTS);
 
     for (i=0,j=0; i < FOUNDFONTS; i++)
-      { /* Bekannte Fonts : fixed ,9x15, 8x13,6x10*/ 
-	fonts[j].fontstr = XLoadQueryFont ( mydisplay,allfonts[i]);
-	if (fonts[j].fontstr == 0) 
-	  printf("Der Font %s konnte nicht gefunden werden. \n",fontname[i]);
-	else {
-	  fonts[j].l = XTextWidth(fonts[i].fontstr,teststr,strlen(teststr));
-	  j++;
-	}
-      }
+    { /* Bekannte Fonts : fixed ,9x15, 8x13,6x10*/  
+      fonts[j].fontstr = XLoadQueryFont ( mydisplay,allfonts[i]);
+      if (fonts[j].fontstr == 0)
+        printf("Der Font %s konnte nicht gefunden werden. \n",fontname[i]);
+      else
+      { 
+        fonts[j].l = XTextWidth(fonts[i].fontstr,teststr,strlen(teststr));
+        j++;
+      } 
+    }
     FOUNDFONTS=j;
   }
 }
@@ -746,6 +848,7 @@ void setPS(){
     mycircle = mycirclePS;
     myfilledcircle = myfilledcirclePS;
     densityfield = densityfieldPS;
+    twodensityfield = twodensityfieldPS;
     mytext = mytext_PS;
     myselectfont = myselectfont_PS;
     mysetfontdirection = mysetfontdirection_PS;
@@ -816,6 +919,7 @@ void setX(){
     mycircle = mycircleX;
     myfilledcircle = myfilledcircleX;
     densityfield = densityfieldX;
+    twodensityfield = twodensityfieldX;
     mytext = mytext_X;
     myselectfont = myselectfont_X;
     mysetfontdirection = mysetfontdirection_X;

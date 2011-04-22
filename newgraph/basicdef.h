@@ -53,6 +53,10 @@ typedef struct nz2data {
   double BarYOfs;
   double density_min;
   double density_max;
+  double density1_min;
+  double density1_max;
+  double density2_min;
+  double density2_max;
   int newdata;
   int rough;
   int copy[2];
@@ -61,10 +65,13 @@ typedef struct nz2data {
   int noy;
   int *draw;
   int nocuts;
+  int nocuts1;
   int maxcuts;
+  int maxcuts1;
   int adjustcuts;
   int adjustdensity;
   double *cut;
+  double *cut1;
   int *draw_ufield;
   int *draw_tfield;
   int *rough_t;
@@ -74,6 +81,8 @@ typedef struct nz2data {
   double xofs;
   double yofs;
   int magnify;
+  /* Sept 2010: new two-density plot data */
+  int drawtwodensity,d1,d2;
 } nz2d;
 
 typedef struct project3d_data {
@@ -124,6 +133,7 @@ typedef struct nzgraph2d_ {
   int newdata;
   int *draw;
   int *draw1;
+  int *draw2;
   int rough;
   int copy;
   int scaling;

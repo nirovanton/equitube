@@ -6,6 +6,7 @@
 #define N_R         0
 #define N_RxR       1
 #define N_RxRxR     2
+#define N_RxRxRxR   12
 #define NxN_R       3
 #define NxN_RxR     4
 #define NxN_RxRxRt  5
@@ -32,6 +33,7 @@ typedef struct _grstr {
       anzN_RxR,maxanzN_RxR,      /*2d-curve*/
       anzN_RxRp,maxanzN_RxRp,      /*2d-curve*/
       anzN_RxRxR,maxanzN_RxRxR,  /*3-d curve, not implemented*/
+      anzN_RxRxRxR,maxanzN_RxRxRxR,  /*2-d Tubes for John Harris*/
       anzNxN_R,maxanzNxN_R,      /*3-d graph, 2d-contourplot*/
       anzNxN_Rp,maxanzNxN_Rp,      /*3-d graph, 2d-contourplot*/
       anzNxN_RxR,maxanzNxN_RxR,  /*2-d vectorplot*/
@@ -41,19 +43,19 @@ typedef struct _grstr {
       anzNxNxN_Rp,maxanzNxNxN_Rp,  /*3-d plots of density/iterface*/
       anzNxNxN_RxRxR,maxanzNxNxN_RxRxR,/*not implemented*/
       anzcont3d,maxanzcont3d;
-  char **N_Rname,**N_Rnamep,**N_RxRname,**N_RxRpname,**N_RxRxRname,
+  char **N_Rname,**N_Rnamep,**N_RxRname,**N_RxRpname,**N_RxRxRname,**N_RxRxRxRname,
        **NxN_Rname,**NxN_Rpname,**NxN_RxRname,**NxN_RxRpname,**NxN_RxRxRtname,
        **NxNxN_Rname,**NxNxN_Rnamep,**NxNxN_RxRname,
        **cont3dname;
-  double **pN_R,***pN_Rp,**pN_RxR,***pN_RxRp,**pN_RxRxR,
+  double **pN_R,***pN_Rp,**pN_RxR,***pN_RxRp,**pN_RxRxR,**pN_RxRxRxR,
     **pNxN_R,***pNxN_Rp,**pNxN_RxR,***pNxN_RxRp,**pNxN_RxRxRt,
     **pNxN_RxRxR,**pNxNxN_R,***pNxNxN_Rp,**pNxNxN_RxRxR;
-  grdat *dN_R,*dN_Rp,*dN_RxR,*dN_RxRp; /* only some types require these data */
+  grdat *dN_R,*dN_Rp,*dN_RxR,*dN_RxRp,*dN_RxRxRxR; /* only some types require these data */
   Contour ***pcont3d;
-  dim1    *dimN_R,*dimN_Rp,*dimN_RxR,*dimN_RxRp,*dimN_RxRxR;
+  dim1    *dimN_R,*dimN_Rp,*dimN_RxR,*dimN_RxRp,*dimN_RxRxR,*dimN_RxRxRxR;
   dim2    *dimNxN_R,*dimNxN_Rp,*dimNxN_RxR,*dimNxN_RxRp,*dimNxN_RxRxRt;
   dim3    *dimNxNxN_R,*dimNxNxN_Rp,*dimNxNxN_RxRxR,*dimcont3d;
-  int **reqN_R,**reqN_Rp,**reqN_RxR,**reqN_RxRp,**reqN_RxRxR,**reqNxN_R,**reqNxN_Rp,
+  int **reqN_R,**reqN_Rp,**reqN_RxR,**reqN_RxRp,**reqN_RxRxR,**reqN_RxRxRxR,**reqNxN_R,**reqNxN_Rp,
       **reqNxN_RxR,**reqNxN_RxRp,**reqNxN_RxRxRt,**reqNxN_RxRxR,
       **reqNxNxN_R,**reqNxNxN_Rp,**reqNxNxN_RxRxR,**reqcont3d;
   /* This was a nice idea that worked beautifully with c-programs.
@@ -83,6 +85,7 @@ extern void SetActiveGraph(int);
 extern void DefineGraphN_R(char *Name,double *gd,int *dim,int *req);
 extern void DefineGraphN_Rp(char *Name,double **gd,int *dim,int *req);
 extern void DefineGraphN_RxR(char *Name,double *gd,int *dim,int *req);
+extern void DefineGraphN_RxRxRxR(char *Name,double *gd,int *dim,int *req);
 extern void DefineGraphN_RxRp(char *Name,double **gd,int *dim,int *req);
 extern void DefineGraphNxN_R(char *Name,double *gd,
                       int *dim1,int *dim2,int *req);

@@ -18,6 +18,14 @@ extern void draw2dgraph(int xsize,int ysize,double **gp,
 			double xmin,double xmax,int logx,
 			double ymin,double ymax,int logy, 
 			int type, grdat *gr);
+
+extern void draw2dtubes(int xsize,int ysize,double **gp, 
+			dim1 *no, int *draw, int nograph,
+			int comments,  
+			double xmin,double xmax,int logx,
+			double ymin,double ymax,int logy, 
+			int type,grdat *gr);
+
 #endif
 
 

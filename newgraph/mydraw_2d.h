@@ -31,11 +31,19 @@ extern int initPS(char *filename, double xsize, double ysize,
 extern void setPS();
 
 
-int ColorRampStart();
-int ColorRampEnd();
-int NumberOfColors();
-void SetColorRampStart(int i);
-void SetColorRampEnd  (int i);
+extern int ColorRampStart();
+extern int ColorRampEnd();
+extern int NumberOfColors();
+extern void SetColorRampStart(int i);
+extern void SetColorRampEnd  (int i);
+
+extern void SetColorFieldStart(int i);
+extern int ColorFieldStart();
+extern void SetColorFieldX(int i);
+extern int ColorFieldX();
+extern void SetColorFieldY(int i);
+extern int ColorFieldY();
+
 extern int  GetFreeColors();
 extern void setcolormap(XColor *map, int n);
 
@@ -48,8 +56,12 @@ extern void (*mytriangle_2)(int color, int color_line, XPoint *points);
 extern void (*mycircle)(int color, int x, int y, int r);
 extern void (*myfilledcircle)(int color, int x, int y, int r);
 extern void (*densityfield)(int nox, int noy,double zmin, double zmax,
-		     int  colmin, int colmax, double *f,
-		     int xofs, int yofs, int xsize, int ysize);
+			    int  colmin, int colmax, double *f,
+			    int xofs, int yofs, int xsize, int ysize);
+extern void (*twodensityfield)(int nox, int noy,
+			       double z1min, double z1max,double z2min, double z2max,
+			       int colomin,int colx, int coly, double *f1, double *f2,
+			       int xofs, int yofs, int xsize, int ysize);
 
 extern void (*mytext)(int color,int x, int y,const char *text, int orient);
 extern void (*myselectfont)(int font, char *testtext, double length);

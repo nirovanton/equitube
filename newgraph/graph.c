@@ -67,6 +67,14 @@ void StartGraph(grstr *graph){
   graph->dN_RxR      = NULL;
   graph->reqN_RxR    = NULL;
 
+  graph->anzN_RxRxRxR    = 0;
+  graph->maxanzN_RxRxRxR = 0;
+  graph->N_RxRxRxRname   = NULL;
+  graph->pN_RxRxRxR      = NULL;
+  graph->dimN_RxRxRxR    = NULL;
+  graph->dN_RxRxRxR      = NULL;
+  graph->reqN_RxRxRxR    = NULL;
+
   graph->anzN_RxRp    = 0;
   graph->maxanzN_RxRp = 0;
   graph->N_RxRpname   = NULL;
@@ -302,6 +310,39 @@ void DefineGraphN_RxR(char *Name,double *data,int *dim,int *req){
   graph[graphno].dN_RxR[graph[graphno].anzN_RxR-1].size=DefaultSize;
 }
 
+void DefineGraphN_RxRxRxR(char *Name,double *data,int *dim,int *req){
+  const static int optlen =10;
+
+  if (graph==NULL) InitGraph();
+  graph[graphno].anzN_RxRxRxR++;
+  if (graph[graphno].anzN_RxRxRxR>=graph[graphno].maxanzN_RxRxRxR){
+    graph[graphno].maxanzN_RxRxRxR+=optlen;
+    graph[graphno].N_RxRxRxRname = (char **) 
+      realloc(graph[graphno].N_RxRxRxRname,
+	      graph[graphno].maxanzN_RxRxRxR*sizeof(char *));
+    graph[graphno].dimN_RxRxRxR = (dim1 *) 
+      realloc(graph[graphno].dimN_RxRxRxR,graph[graphno].maxanzN_RxRxRxR*sizeof(dim1));
+    graph[graphno].pN_RxRxRxR = (double **) 
+      realloc(graph[graphno].pN_RxRxRxR,
+	      graph[graphno].maxanzN_RxRxRxR*sizeof(double *));
+    graph[graphno].dN_RxRxRxR = (grdat *)
+      realloc(graph[graphno].dN_RxRxRxR,graph[graphno].maxanzN_RxRxRxR*sizeof(grdat));
+    graph[graphno].reqN_RxRxRxR = (int **)
+      realloc(graph[graphno].reqN_RxRxRxR,graph[graphno].maxanzN_RxRxRxR*sizeof(int*));
+  }
+  graph[graphno].N_RxRxRxRname[graph[graphno].anzN_RxRxRxR-1]=
+    (char *) malloc((strlen(Name)+1)*sizeof(char));
+  sprintf(graph[graphno].N_RxRxRxRname[graph[graphno].anzN_RxRxRxR-1],"%s",Name);
+  graph[graphno].dimN_RxRxRxR[graph[graphno].anzN_RxRxRxR-1][0]=dim;
+  graph[graphno].pN_RxRxRxR[graph[graphno].anzN_RxRxRxR-1]=data;
+  graph[graphno].reqN_RxRxRxR[graph[graphno].anzN_RxRxRxR-1]=req;
+  graph[graphno].dN_RxRxRxR[graph[graphno].anzN_RxRxRxR-1].color=DefaultColor;
+  graph[graphno].dN_RxRxRxR[graph[graphno].anzN_RxRxRxR-1].linetype=DefaultLineType;
+  graph[graphno].dN_RxRxRxR[graph[graphno].anzN_RxRxRxR-1].shape=DefaultShape;
+  graph[graphno].dN_RxRxRxR[graph[graphno].anzN_RxRxRxR-1].fill=DefaultFill;
+  graph[graphno].dN_RxRxRxR[graph[graphno].anzN_RxRxRxR-1].size=DefaultSize;
+}
+
 void DefineGraphN_RxRp(char *Name,double **data,
 		       int *dim,int *req){
   const static int optlen =10;
@@ -535,6 +576,11 @@ void getgraph3d(grstr graph,int type,double **gp,int *no,int get,
     rx_size=/*copy[0]**/*graph.dimN_RxR[get][0];
     no[0]=rx_size;
     *gp=graph.pN_RxR[get];
+    break;
+  case N_RxRxRxR:
+    rx_size=/*copy[0]**/*graph.dimN_RxRxRxR[get][0];
+    no[0]=rx_size;
+    *gp=graph.pN_RxRxRxR[get];
     break;
 
   case N_RxRp:

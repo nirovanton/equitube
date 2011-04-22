@@ -1,6 +1,6 @@
 /***************************************************************************\
 graph library
-Copyright (C) 1992-2003  Alexander Wagner
+Copyright (C) 1992-2010  Alexander Wagner
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -60,6 +60,9 @@ void definerequests(grstr *graph,int type,nzdata *zd){
       for (j=0;j<graph->anzN_RxRp;i++,j++)
        if (graph->reqN_RxRp[j]!=NULL)
 	 *graph->reqN_RxRp[j]|=zd->graph2d.draw[i];
+      for (i=0;i<graph->anzN_RxRxRxR;i++)
+       if (graph->reqN_RxRxRxR[i]!=NULL)
+	 *graph->reqN_RxRxRxR[i]|=zd->graph2d.draw2[i];
     break;
   case graph_2d:
     for (i=0;i<graph->anzNxN_R;i++)
@@ -238,6 +241,46 @@ void scalegraph2d(double **gp,int *draw,int anz,
     }
 }
 
+void scalegraph_tubes(double **gp,int *draw,int anz,
+		 dim1 *dim, double *xmin,
+		 double *xmax,double *ymin,
+		 double *ymax)
+{
+  int i,count;
+  long j;
+  double *lgp;
+
+  // is there a drawable graph?
+  for (i=0,count=0;i<anz;i++){
+    if ((draw[i]==0)||(*dim[i][0]==0)) count++;
+    else i=anz;
+  }
+  if (count==anz) return;
+  i=count;
+
+  *xmin = *xmax = gp[i][0];
+  *ymin = *ymax = gp[i][1];
+  for (; i<anz; i++) 
+    {
+      if ((draw[i]!=0)&&(*dim[i][0]!=0))
+	{
+	  lgp=gp[i]-1;
+	  for (j=0; j<*dim[i][0]; j++)
+	    {
+	      if (*(++lgp) < *xmin) 
+		*xmin = *lgp;
+	      if (*lgp > *xmax) 
+		*xmax = *lgp;
+	      if (*(++lgp) < *ymin) 
+		*ymin = *lgp;
+	      if (*lgp > *ymax) 
+		*ymax = *lgp;
+	      lgp+=2; /* angle and length */
+	    }
+	}
+    }
+}
+
 void AddBorder(double *xmin,double *xmax,double *ymin,double *ymax){
   double dz;
 
@@ -373,8 +416,8 @@ void neu_zeichnen_2dgraph(Display *myd,mywindow *mw,int PS,char *psname, double 
 		   grstr graph)
 {
   int xsize,ysize,i,j,done=0;
-  dim1 *dimN_R,*dimN_RxR;
-  static  double **gp=NULL,**gp1=NULL;
+  dim1 *dimN_R,*dimN_RxR,*dimN_RxRxRxR;
+  static  double **gp=NULL,**gp1=NULL,**gp2=NULL;
   grdat *mygrdat,*mygrdat1;
 
   if (PS)
@@ -412,6 +455,13 @@ void neu_zeichnen_2dgraph(Display *myd,mywindow *mw,int PS,char *psname, double 
     exit(1);
   }
 
+  gp2= (double **) malloc((graph.anzN_RxRxRxR)*sizeof(double *));
+  if (gp1==NULL) {
+    fprintf(stderr,"neuzeichen.c:2dgraph:can not allocate gp2:%i*sizeof(double*)\n",
+	    graph.anzN_RxRxRxR);
+    exit(1);
+  }
+
   for (i=0; i< graph.anzN_RxR+graph.anzN_RxRp; i++){
     gp[i]=NULL; /* Why this? */
     if (mw->menu->zd->graph2d.draw[i]){
@@ -424,11 +474,18 @@ void neu_zeichnen_2dgraph(Display *myd,mywindow *mw,int PS,char *psname, double 
       done=1;
     }
   }
+  for (i=0; i< graph.anzN_RxRxRxR; i++){
+    gp2[i]=NULL; /* Why this? */
+    if (mw->menu->zd->graph2d.draw2[i]){
+      done=1;
+    }
+  }
   if (done==0) {
     free(mygrdat);
     free(mygrdat1);
     if (gp!=NULL) free(gp);
     if (gp1!=NULL) free(gp1);
+    if (gp2!=NULL) free(gp2);
     myclear();
     myshow();
     return;
@@ -459,6 +516,12 @@ void neu_zeichnen_2dgraph(Display *myd,mywindow *mw,int PS,char *psname, double 
 		 mw->menu->zd->graph2d.rough,
 		 &mw->menu->zd->graph2d.copy);
   }
+  for (i=0; i< graph.anzN_RxRxRxR; i++){
+    if (mw->menu->zd->graph2d.draw2[i])
+      getgraph3d(graph,N_RxRxRxR,&gp2[i], graph.dimN_RxRxRxR[i][0],i,
+		 mw->menu->zd->graph2d.rough,
+		 &mw->menu->zd->graph2d.copy);
+  }
   dimN_R  =(dim1 *) malloc((graph.anzN_R+graph.anzN_Rp)*sizeof(dim1));
   for (i=0;i<graph.anzN_R;i++){
     dimN_R[i][0]=graph.dimN_R[i][0];
@@ -472,6 +535,10 @@ void neu_zeichnen_2dgraph(Display *myd,mywindow *mw,int PS,char *psname, double 
   }
   for (j=0;j<graph.anzN_RxRp;i++,j++){
     dimN_RxR[i][0]=graph.dimN_RxRp[j][0];
+  }
+  dimN_RxRxRxR=(dim1 *) malloc((graph.anzN_RxRxRxR)*sizeof(dim1));
+  for (i=0;i<graph.anzN_RxRxRxR;i++){
+    dimN_RxRxRxR[i][0]=graph.dimN_RxRxRxR[i][0];
   }
 
 
@@ -492,6 +559,11 @@ void neu_zeichnen_2dgraph(Display *myd,mywindow *mw,int PS,char *psname, double 
 		 dimN_R,
 		 &mw->menu->zd->graph2d.xmin,&mw->menu->zd->graph2d.xmax,
 		 &mw->menu->zd->graph2d.ymin,&mw->menu->zd->graph2d.ymax);
+    scalegraph_tubes(gp2,mw->menu->zd->graph2d.draw2,
+		 graph.anzN_RxRxRxR,
+		 dimN_RxRxRxR,&mw->menu->zd->graph2d.xmin,
+		 &mw->menu->zd->graph2d.xmax,&mw->menu->zd->graph2d.ymin,
+		 &mw->menu->zd->graph2d.ymax);
     AddBorder(&mw->menu->zd->graph2d.xmin,&mw->menu->zd->graph2d.xmax,
 	      &mw->menu->zd->graph2d.ymin,&mw->menu->zd->graph2d.ymax);
   }
@@ -511,6 +583,13 @@ void neu_zeichnen_2dgraph(Display *myd,mywindow *mw,int PS,char *psname, double 
 	      mw->menu->zd->graph2d.ymin,mw->menu->zd->graph2d.ymax,
 	      mw->menu->zd->graph2d.logy,1,
 	      mygrdat);
+  draw2dtubes(xsize,ysize,gp2,dimN_RxRxRxR,mw->menu->zd->graph2d.draw2,
+	      graph.anzN_RxRxRxR,mw->menu->zd->graph2d.comments,
+	      mw->menu->zd->graph2d.xmin,mw->menu->zd->graph2d.xmax,
+	      mw->menu->zd->graph2d.logx,
+	      mw->menu->zd->graph2d.ymin,mw->menu->zd->graph2d.ymax,
+	      mw->menu->zd->graph2d.logy,1,
+	      graph.dN_RxRxRxR);
   mw->menu->zd->time.newdata=0;
   free(mygrdat);
   free(mygrdat1);
@@ -587,7 +666,7 @@ void drawcontour(double *cont,int *length,int xmin,int ymin,int xmax, int ymax,
 
 void drawcontourline(double *cont,int *length,int xmin,int ymin,
 		     int xmax, int ymax,
-		 int xofs,int yofs,int nxsize, int nysize)
+		     int xofs,int yofs,int nxsize, int nysize,int color)
 {
   XPoint *points;
   int i,j,k,l,*sorted;
@@ -623,7 +702,7 @@ void drawcontourline(double *cont,int *length,int xmin,int ymin,
 	    }
 	    else
 	    */
-	    myline_polygon(schwarz(),points,sorted[2*j+1]);
+	    myline_polygon(color,points,sorted[2*j+1]);
 	  }
       free(points);
       free(sorted);
@@ -765,7 +844,7 @@ void neu_zeichnen2(Display *myd,mywindow *mw,int PS,char *psname,
 		   int PSlandscape,
 		   grstr graph)
 {
-  int xsize,ysize,nxsize=1,nysize=1,no[2],xofs=0,yofs=0,
+  int xsize,ysize,nxsize=1,nysize=1,no[2],no1[2],xofs=0,yofs=0,
     xlofs=0,ylofs=0,xlsize=0,ylsize=0,
     i,*length,linedist,
     xmin,xmax,ymin,ymax,contexist=0,boundary=0;
@@ -773,7 +852,7 @@ void neu_zeichnen2(Display *myd,mywindow *mw,int PS,char *psname,
   char comment[400];
   int graphcount;
   XPoint screenp[4];
-  double *gp=NULL,*sp=NULL,*gptmp=NULL,**vp;
+  double *gp=NULL,*gp1=NULL,*sp=NULL,*gptmp=NULL,**vp;
 
    
   if (PS)
@@ -817,7 +896,7 @@ void neu_zeichnen2(Display *myd,mywindow *mw,int PS,char *psname,
       xsize-=xlsize;
   }
   for (graphcount=0;graphcount<graph.anzNxN_R+graph.anzNxN_Rp;graphcount++)
-    if (mw->menu->zd->nz2.draw[graphcount]){
+    if (mw->menu->zd->nz2.draw[graphcount] && !mw->menu->zd->nz2.drawtwodensity){
       contexist=1;
       gp=NULL;
       if (graphcount<graph.anzNxN_R)
@@ -950,7 +1029,7 @@ void neu_zeichnen2(Display *myd,mywindow *mw,int PS,char *psname,
 	      case 2 :
 		drawcontourline(cont,length,xmin,ymin,
 				xmax,ymax,
-				xofs,yofs,nxsize,nysize);
+				xofs,yofs,nxsize,nysize,schwarz());
 		break;
 	      default: 
 		fprintf(stderr,"error in neuzeichnen.c:neu_zeichnen2() density=%i",
@@ -964,7 +1043,148 @@ void neu_zeichnen2(Display *myd,mywindow *mw,int PS,char *psname,
       }
       /*  free(gp); gp=NULL; Not needed again! */
   }
-  
+
+  /* Sept 2010: new data display of two simultanous densities, colored according to a color field. This needs to be finished. Define new part in menu structure. Need a menu to select the two graphs to compare, then draw the graphs here!*/
+  if (mw->menu->zd->nz2.drawtwodensity){
+    contexist=1;
+    gp=NULL;
+    for (i=0;i<graph.anzNxN_R+graph.anzNxN_Rp;i++){
+      if (mw->menu->zd->nz2.draw[i]) {
+	mw->menu->zd->nz2.d1=i;
+	i++;
+	break;
+      }
+    }
+    for (;i<graph.anzNxN_R+graph.anzNxN_Rp;i++){
+      if (mw->menu->zd->nz2.draw[i]){
+	mw->menu->zd->nz2.d2=i;
+	break;
+      }
+    }
+    if (i==graph.anzNxN_R+graph.anzNxN_Rp) mw->menu->zd->nz2.d2=mw->menu->zd->nz2.d2=0;
+    if (mw->menu->zd->nz2.d1<graph.anzNxN_R)
+      getgraph3d(graph,NxN_R,&gp,
+		 &no[0],mw->menu->zd->nz2.d1,mw->menu->zd->nz2.rough,
+		 &mw->menu->zd->nz2.copy[0]);
+    else getgraph3d(graph,NxN_Rp,&gp,
+		    &no[0],mw->menu->zd->nz2.d1-graph.anzNxN_R,mw->menu->zd->nz2.rough,
+		    &mw->menu->zd->nz2.copy[0]);
+    if (mw->menu->zd->nz2.d2<graph.anzNxN_R)
+      getgraph3d(graph,NxN_R,&gp1,
+		 &no1[0],mw->menu->zd->nz2.d2,mw->menu->zd->nz2.rough,
+		 &mw->menu->zd->nz2.copy[0]);
+    else getgraph3d(graph,NxN_Rp,&gp1,
+		    &no1[0],mw->menu->zd->nz2.d2-graph.anzNxN_R,mw->menu->zd->nz2.rough,
+		    &mw->menu->zd->nz2.copy[0]);
+    if ((no[0]!=no1[0])||(no[1]!=no1[1])) {
+      contexist=0;
+      printf("Error in drawing twodensity graph: graphs have different dimensions!\n x: %i=%i, y: %i=%i\n",no[0],no1[0],no[1],no1[1]);
+    }
+    
+    if (contexist){
+	if (mw->menu->zd->nz2.magnify){
+	  gptmp=(double *) malloc(mw->menu->zd->nz2.NewXsize*
+				  mw->menu->zd->nz2.NewYsize*sizeof(double));
+	  Cutdata(gp,no[0],no[1],gptmp,
+		  mw->menu->zd->nz2.NewXsize,mw->menu->zd->nz2.NewYsize,
+		  mw->menu->zd->nz2.DoCenter,
+		  &mw->menu->zd->nz2.xofs,&mw->menu->zd->nz2.yofs);
+	  gp=gptmp;
+	  gptmp=(double *) malloc(mw->menu->zd->nz2.NewXsize*
+				  mw->menu->zd->nz2.NewYsize*sizeof(double));
+	  Cutdata(gp1,no[0],no[1],gptmp,
+		  mw->menu->zd->nz2.NewXsize,mw->menu->zd->nz2.NewYsize,
+		  mw->menu->zd->nz2.DoCenter,
+		  &mw->menu->zd->nz2.xofs,&mw->menu->zd->nz2.yofs);
+	  gp1=gptmp;
+	  no[0]=mw->menu->zd->nz2.NewXsize;
+	  no[1]=mw->menu->zd->nz2.NewYsize;
+	}
+      
+	xmin=0; xmax=no[0]; ymin=0; ymax=no[1];
+	
+	nxsize=xsize; nysize=ysize;
+	if (ysize>xsize*(ymax-ymin)/(xmax-xmin))
+	  nysize=xsize*(ymax-ymin)/(xmax-xmin);
+	else nxsize=ysize*(xmax-xmin)/(ymax-ymin);
+	if (nxsize<xsize) xofs=(xsize-nxsize)/2;
+	if (nysize<ysize) yofs=(ysize-nysize)/2;
+	
+	
+	if (mw->menu->zd->nz2.adjustcuts&&contexist){
+	  scaleScalar(gp,no[0]*no[1],&zmin,&zmax);
+	  for (i=0;i<mw->menu->zd->nz2.nocuts;i++) 
+	    mw->menu->zd->nz2.cut[i]=
+	      zmin+(i+1)*(zmax-zmin)/(mw->menu->zd->nz2.nocuts+1);
+	  scaleScalar(gp1,no[0]*no[1],&zmin,&zmax);
+	  for (i=0;i<mw->menu->zd->nz2.nocuts1;i++) 
+	    mw->menu->zd->nz2.cut1[i]=
+	      zmin+(i+1)*(zmax-zmin)/(mw->menu->zd->nz2.nocuts+1);
+	}
+	if (mw->menu->zd->nz2.adjustdensity&&contexist){
+	  scaleScalar(gp,no[0]*no[1],&zmin,&zmax);
+	  mw->menu->zd->nz2.density1_min=zmin;
+	  mw->menu->zd->nz2.density1_max=zmax;
+	  scaleScalar(gp1,no[0]*no[1],&zmin,&zmax);
+	  mw->menu->zd->nz2.density2_min=zmin;
+	  mw->menu->zd->nz2.density2_max=zmax;
+	}
+
+	if ((mw->menu->zd->nz2.koord==1)&&contexist){
+	  Koordinatensystem2D(schwarz(),mw->menu->zd->nz2.koordxmin,mw->menu->zd->nz2.koordxmax,mw->menu->zd->nz2.koordlogx,mw->menu->zd->nz2.koordymin,mw->menu->zd->nz2.koordymax,mw->menu->zd->nz2.koordlogy,&xofs,&yofs,
+		      &nxsize,&nysize,"X","Y","","");
+	}
+	  /* At this point we should also allow a coordinate system to
+	     be drawn around the density field. The standard values for the 
+	     coordinates should simply be the dimensions of the field, but
+	     one should be able to alter these values to correspond to
+	     physical values. It would be preferable if this data was
+	     available in the data stucture of NxN_R already so that it could
+	     be defined in DefineGraph().
+	  */
+
+
+	if ((mw->menu->zd->nz2.drawtwodensity==1)&&contexist){
+	  twodensityfield(no[0],no[1],
+			  mw->menu->zd->nz2.density1_min,
+			  mw->menu->zd->nz2.density1_max,
+			  mw->menu->zd->nz2.density2_min,
+			  mw->menu->zd->nz2.density2_max,
+			  ColorFieldStart(),ColorFieldX(),ColorFieldY(),
+			  gp,gp1,xofs,yofs,nxsize,nysize);
+
+	  if (UserComment==NULL)
+	    sprintf(comment,"Min1=%g, Max1=%g, Min2=%g, Max2=%g, ",
+		    mw->menu->zd->nz2.density1_min,
+		    mw->menu->zd->nz2.density1_max,
+		    mw->menu->zd->nz2.density2_min,
+		    mw->menu->zd->nz2.density2_max);
+	}
+	for (i=0;(i<mw->menu->zd->nz2.nocuts)&&(contexist!=0);i++)
+	  {
+	    contour(gp,no[0],no[1],
+		    mw->menu->zd->nz2.cut[i],&cont,&length,0,NULL,
+		    &boundary);
+	    drawcontourline(cont,length,xmin,ymin,
+			    xmax,ymax,
+			    xofs,yofs,nxsize,nysize,gruen());
+	    free(cont);
+	    free(length);
+	  }
+	for (i=0;(i<mw->menu->zd->nz2.nocuts1)&&(contexist!=0);i++)
+	  {
+	    contour(gp1,no[0],no[1],
+		    mw->menu->zd->nz2.cut1[i],&cont,&length,0,NULL,
+		    &boundary);
+	    drawcontourline(cont,length,xmin,ymin,
+			    xmax,ymax,
+			    xofs,yofs,nxsize,nysize,rot());
+	    free(cont);
+	    free(length);
+	  }
+	if (mw->menu->zd->nz2.magnify) free(gptmp);
+    } 
+  }
   
   scale=0;
   contexist=0;
@@ -1314,7 +1534,7 @@ int Contour_print(char *psname, double PSwidth, double PSheight,
 	  case 2 :
 	    drawcontourline(cont,length,xmin,ymin,
 			    xmax,ymax,
-			    xofs,yofs,nxsize,nysize);
+			    xofs,yofs,nxsize,nysize,schwarz());
 	    break;
 	  default: 
 	    fprintf(stderr,"error in neuzeichnen.c:neu_zeichnen2() density=%i",
@@ -1393,7 +1613,7 @@ void neu_zeichnen_contour3d(Display *myd,mywindow *mw,int PS,char *psname,
 
 
 #ifdef notdef
-/* this should be rewritten using fftw !*/
+/* this should be rewritten using fftw!*/
 void neu_zeichnen_grfft(Display *myd,mywindow *mw,int PS,char *psname, double PSwidth, double PSheight, int PSletter, int PSlandscape,
 		   grstr graph)
 {
