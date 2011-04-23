@@ -26,7 +26,7 @@
 
 //GLOBALS 
 //=========================================
-#define tube_count 4 
+#define tube_count 3 
 double field_size = 10;
 double energy;
 double radius = 1.0;
@@ -37,7 +37,7 @@ double p_initial[tube_count][4], p_gr[tube_count][4];
 int steps = 1, mstep = 0;
 int pgr_req = 0, compress = 0, decompress = 0;
 double iteration_array[tube_count][9];
-int done = 0, poz = 1, sstep = 1, rlx = 0;
+int done = 0, poz = 1, sstep = 1;
 //=========================================
 
 double calculateEnergy()
@@ -91,10 +91,10 @@ double calculateEnergy()
             double x_int = (b2-b1)/(m1-m2);
             if(x_int >= p1[0] && x_int >= p2[0] && x_int <= p1[2] && x_int <= p2[2])
             {
-                if (fabs(sin(tube_array[k][2]-tube_array[j][2])) > 1e-5)
-                    potential += -1*(radius*vand_const)/fabs(sin(tube_array[k][2]-tube_array[j][2]));
-                else
-                    potential += -1*(radius*vand_const)/fabs(1e-5);
+                potential += -1*(radius*vand_const)/(fabs(sin(tube_array[k][2]-tube_array[j][2]))+1e-5);
+                //printf("%i",k);
+                //printf("%s","->");
+                //printf("%i \n",j);
             }
         }
     }
@@ -103,10 +103,14 @@ double calculateEnergy()
 
 void relaxNetwork()
 {
-    double starting_energy = calculateEnergy();
-    rlx = 1;
+    printf("%s \n","\n============================================");
     for(int j = 0; j < tube_count; j++)
     {
+        double starting_energy = calculateEnergy();
+        printf("%s","E: ");
+        printf("%lf \n",starting_energy);
+
+
         double tmp = 0.0;
         // ADJUST THE ITERATIONS
         // ---------------------
@@ -134,21 +138,29 @@ void relaxNetwork()
                 iteration_array[j][6] = tmp;
             }
         }
-   
+        
 
         // MINIMIZE X
         // ----------
         int x_min = 0;
+        
         // <incease x>
         tmp = tube_array[j][0] + iteration_array[j][0];
         tube_array[j][0] = tmp;
-        if(calculateEnergy() > starting_energy)
-        {
+        
+        printf("%i ",j); 
+        printf("%s", "x+dx: ");
+        printf("%lf \n",calculateEnergy());
+        
+        if(calculateEnergy() >= starting_energy)
             tube_array[j][0] = tmp - iteration_array[j][0];
-        }
-        else if(calculateEnergy() <= starting_energy)
+        else if(calculateEnergy() < starting_energy)
         {
-            starting_energy = calculateEnergy();                
+            starting_energy = calculateEnergy();
+            
+            printf("%s","E: ");
+            printf("%lf \n",starting_energy);
+            
             iteration_array[j][1] += 1;
             iteration_array[j][2] = 0;
             x_min = 1;
@@ -158,13 +170,20 @@ void relaxNetwork()
             // <decrease x>
             tmp = tube_array[j][0] - iteration_array[j][0];
             tube_array[j][0] = tmp;
-            if(calculateEnergy() > starting_energy)
-            {
+
+            printf("%i ",j);
+            printf("%s", "x-dx: ");
+            printf("%lf \n",calculateEnergy());
+
+            if(calculateEnergy() >= starting_energy)
                 tube_array[j][0] = tmp + iteration_array[j][0];
-            }
-            else if(calculateEnergy() <= starting_energy)
+            else if(calculateEnergy() < starting_energy)
             {
                 starting_energy = calculateEnergy();
+       
+                printf("%s","E: ");
+                printf("%lf \n",starting_energy);
+                
                 iteration_array[j][1] = 0;
                 iteration_array[j][2] += 1;
                 x_min = 1;
@@ -173,6 +192,9 @@ void relaxNetwork()
             {
                 if(iteration_array[j][0] > 1e-20)
                 {
+                    printf("%i ",j);
+                    printf("%s \n","failed to minimize X");
+
                     tmp = iteration_array[j][0]/2;
                     iteration_array[j][0] = tmp;
                     iteration_array[j][1] = 0;
@@ -187,13 +209,20 @@ void relaxNetwork()
         // <incease y>
         tmp = tube_array[j][1] + iteration_array[j][3];
         tube_array[j][1] = tmp;
-        if(calculateEnergy() > starting_energy)
-        {
+
+        printf("%i ",j);
+        printf("%s", "y+dy: ");
+        printf("%lf \n",calculateEnergy());
+
+        if(calculateEnergy() >= starting_energy)
             tube_array[j][1] = tmp - iteration_array[j][3];
-        }
-        else if(calculateEnergy() <= starting_energy)
+        else if(calculateEnergy() < starting_energy)
         {
             starting_energy = calculateEnergy();
+        
+            printf("%s","E: ");
+            printf("%lf \n",starting_energy);
+            
             iteration_array[j][4] += 1;
             iteration_array[j][5] = 0;
             y_min = 1;
@@ -203,13 +232,20 @@ void relaxNetwork()
             // <decrease y>
             tmp = tube_array[j][1] - iteration_array[j][3];
             tube_array[j][1] = tmp;
-            if(calculateEnergy() > starting_energy)
-            {
+
+            printf("%i ",j);
+            printf("%s", "y-dy: ");
+            printf("%lf \n",calculateEnergy());
+
+            if(calculateEnergy() >= starting_energy)
                 tube_array[j][1] = tmp + iteration_array[j][3];
-            }
-            else if(calculateEnergy() <= starting_energy)
+            else if(calculateEnergy() < starting_energy)
             {
                 starting_energy = calculateEnergy();
+
+                printf("%s","E: ");
+                printf("%lf \n",starting_energy);
+
                 iteration_array[j][4] = 0;
                 iteration_array[j][5] += 1;
                 y_min = 1;
@@ -218,6 +254,8 @@ void relaxNetwork()
             {
                 if(iteration_array[j][3] > 1e-20)
                 {
+                    printf("%i ",j);
+                    printf("%s \n","failed to minimize Y");
                     tmp = iteration_array[j][3]/2;
                     iteration_array[j][3] = tmp;
                     iteration_array[j][4] = 0;
@@ -232,13 +270,20 @@ void relaxNetwork()
         // <incease theta>
         tmp = tube_array[j][2] + iteration_array[j][6];
         tube_array[j][2] = tmp;
-        if(calculateEnergy() > starting_energy)
-        {
+
+        printf("%i ",j);
+        printf("%s", "T+dT: ");
+        printf("%lf \n",calculateEnergy());
+
+        if(calculateEnergy() >= starting_energy)
             tube_array[j][2] = tmp - iteration_array[j][6];
-        }
-        else if(calculateEnergy() <= starting_energy)
+        else if(calculateEnergy() < starting_energy)
         {
             starting_energy = calculateEnergy();
+
+            printf("%s","E: ");
+            printf("%lf \n",starting_energy);
+
             iteration_array[j][7] += 1;
             iteration_array[j][8] = 0;
             theta_min = 1;
@@ -248,13 +293,20 @@ void relaxNetwork()
             // <decrease theta>
             tmp = tube_array[j][2] - iteration_array[j][6];
             tube_array[j][2] += tmp;
-            if(calculateEnergy() > starting_energy)
-            {
+        
+            printf("%i ",j);
+            printf("%s", "T-dT: ");
+            printf("%lf \n",calculateEnergy());
+
+            if(calculateEnergy() >= starting_energy)
                 tube_array[j][2] = tmp + iteration_array[j][6];
-            }
-            else if(calculateEnergy() <= starting_energy)
+            else if(calculateEnergy() < starting_energy)
             {
                 starting_energy = calculateEnergy();
+       
+                printf("%s","E: ");
+                printf("%lf \n",starting_energy);
+
                 iteration_array[j][7] = 0;
                 iteration_array[j][8] += 1;
                 theta_min = 1;
@@ -263,6 +315,8 @@ void relaxNetwork()
             {
                 if(iteration_array[j][6] > 1e-20)
                 {
+                    printf("%i ",j);
+                    printf("%s \n","failed to minimize theta");
                     tmp = iteration_array[j][6]/2;
                     iteration_array[j][6] = tmp;
                     iteration_array[j][7] = 0;
@@ -270,11 +324,16 @@ void relaxNetwork()
                 }
             }
         }
-        if(iteration_array[j][6]>1e-18&&iteration_array[j][3]>1e-18&&iteration_array[j][0]>1e-18)
-            rlx = 0;
-        printf("%lfx \n",iteration_array[j][0]);
-        printf("%lfy \n",iteration_array[j][3]);
-        printf("%lft \n",iteration_array[j][6]);
+    }
+
+    printf("%s \n","--------------------------------------");
+    printf("%s \n","ID \ttheta \t\tslope \t\tx_cm");
+    for (int i = 0; i < tube_count; i++)
+    {
+        printf("%i \t",i);
+        printf("%lf \t",180*tube_array[i][2]/M_PI);
+        printf("%lf \t",tan(tube_array[i][2]));
+        printf("%lf \t\n",tube_array[i][0]);
     }
 }
 
@@ -436,7 +495,6 @@ void GUI()
     DefineBool("Single Step",&sstep);
     DefineInt("Steps", &steps);
     DefineBool("multi-step", &mstep);
-    DefineBool("RELAXED:", &rlx);
     DefineBool("Done",&done);
     EndMenu();
 }
