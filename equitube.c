@@ -26,12 +26,12 @@
 
 //GLOBALS 
 //=========================================
-#define tube_count 10 
+#define tube_count 5 
 double field_size = 10;
 double energy;
 double radius = .1;
 double vand_const = .01;
-double spring_const = 1, vspring = .01; 
+double spring_const = .01, vspring = .001; 
 double tube_array[tube_count][4], tube_array_init[tube_count][4];
 double p_initial[tube_count][4], p_gr[tube_count][4];
 int steps = 1, mstep = 0;
@@ -123,8 +123,9 @@ void relaxNetwork()
         {
             if(iteration_array[j][0] < 1)
             {
-                tmp = iteration_array[j][0]+.25*iteration_array[j][0];
-                iteration_array[j][0] = tmp;
+                //tmp = iteration_array[j][0]+.25*iteration_array[j][0];
+                //iteration_array[j][0] = tmp;
+                iteration_array[j][0] = .005;
                 iteration_array[j][1] = 0;
                 iteration_array[j][2] = 0;
             }
@@ -133,8 +134,9 @@ void relaxNetwork()
         {
             if(iteration_array[j][3] < 1)
             {
-                tmp = iteration_array[j][3]+.25*iteration_array[j][3];
-                iteration_array[j][3] = tmp;
+                //tmp = iteration_array[j][3]+.25*iteration_array[j][3];
+                ///iteration_array[j][3] = tmp;
+                iteration_array[j][3] = .005;    
                 iteration_array[j][4] = 0;
                 iteration_array[j][5] = 0;
             }
@@ -143,8 +145,9 @@ void relaxNetwork()
         {
             if(iteration_array[j][6] < M_PI/36) //5 degrees
             {
-                tmp = iteration_array[j][6]+.25*iteration_array[j][6];
-                iteration_array[j][6] = tmp;
+                //tmp = iteration_array[j][6]+.25*iteration_array[j][6];
+                //iteration_array[j][6] = tmp;
+                iteration_array[j][6] = .005;
                 iteration_array[j][7] = 0;
                 iteration_array[j][8] = 0;
             }
