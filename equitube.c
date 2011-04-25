@@ -112,19 +112,17 @@ void relaxNetwork()
     for(int j = 0; j < tube_count; j++)
     {
         double starting_energy = calculateEnergy();
+        double tmp = 0.0;
         printf("%s","E: ");
         printf("%lf \n",starting_energy);
 
 
-        double tmp = 0.0;
         // ADJUST THE ITERATIONS
         // ---------------------
         if(iteration_array[j][1] >= 3 || iteration_array[j][2] >= 3)
         {
             if(iteration_array[j][0] < 1)
             {
-                //tmp = iteration_array[j][0]+.25*iteration_array[j][0];
-                //iteration_array[j][0] = tmp;
                 iteration_array[j][0] = .005;
                 iteration_array[j][1] = 0;
                 iteration_array[j][2] = 0;
@@ -134,8 +132,6 @@ void relaxNetwork()
         {
             if(iteration_array[j][3] < 1)
             {
-                //tmp = iteration_array[j][3]+.25*iteration_array[j][3];
-                ///iteration_array[j][3] = tmp;
                 iteration_array[j][3] = .005;    
                 iteration_array[j][4] = 0;
                 iteration_array[j][5] = 0;
@@ -145,8 +141,6 @@ void relaxNetwork()
         {
             if(iteration_array[j][6] < M_PI/36) //5 degrees
             {
-                //tmp = iteration_array[j][6]+.25*iteration_array[j][6];
-                //iteration_array[j][6] = tmp;
                 iteration_array[j][6] = .005;
                 iteration_array[j][7] = 0;
                 iteration_array[j][8] = 0;
