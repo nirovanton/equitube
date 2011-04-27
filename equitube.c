@@ -29,7 +29,7 @@
 #define tube_count 35
 double field_size = 10;
 double energy;
-double radius = .1;
+double radius = .1, current = .0;
 double vand_const = .01;
 double spring_const = .01, vspring = .001; 
 double tube_array[tube_count][4], tube_array_init[tube_count][4];
@@ -38,6 +38,12 @@ int steps = 1, mstep = 0;
 int pgr_req = 0, compress = 0, decompress = 0;
 double iteration_array[tube_count][9];
 int done = 0, poz = 1, sstep = 1, rlx = 0, rlx_cntr = 0;
+
+// for current calculations
+//--------------------------
+int **neighbor_directory;
+double **intercept_coords;
+
 //=========================================
 
 double calculateEnergy()
@@ -357,11 +363,85 @@ void relaxNetwork()
     }
 }
 
-// TODO 
-// ------------
-// double calculateCurrent()
-// ------------
-
+/*
+double calculateCurrent()
+{
+    neighbor_directory = malloc(tube_count * sizeof(int *));
+    intercept_coords = malloc(tube_count * sizeof(double *));
+    for (int k = 0; k < tube_count; k++)
+    {
+        int size = 0
+        double m1 = tan(tube_array[k][2]);
+        double b1 = tube_array[k][1]-m1*tube_array[k][0];
+        double p1[4];
+        p1[0] = tube_array[k][0] - fabs(tube_array[k][3]*cos(tube_array[k][2]));
+        p1[2] = tube_array[k][0] + fabs(tube_array[k][3]*cos(tube_array[k][2]));
+        if(m1 >= 0)
+        {
+            p1[1] = tube_array[k][1] - fabs(tube_array[k][3]*sin(tube_array[k][2]));
+            p1[3] = tube_array[k][1] + fabs(tube_array[k][3]*sin(tube_array[k][2]));
+        }
+        else
+        {
+            p1[1] = tube_array[k][1] + fabs(tube_array[k][3]*sin(tube_array[k][2]));
+            p1[3] = tube_array[k][1] - fabs(tube_array[k][3]*sin(tube_array[k][2]));
+        }
+        for (int j=0; j<tube_count; j++)
+        {
+            double m2 = tan(tube_array[j][2]);
+            if(m1 == m2)
+                continue;
+            double b2 = tube_array[j][1]-m2*tube_array[j][0];
+            double p2[4];
+            p2[0] = tube_array[j][0] - fabs(tube_array[j][3]*cos(tube_array[j][2]));
+            p2[2] = tube_array[j][0] + fabs(tube_array[j][3]*cos(tube_array[j][2]));
+            if(m2 >= 0)
+            {
+                p2[1] = tube_array[j][1] - fabs(tube_array[j][3]*sin(tube_array[j][2]));
+                p2[3] = tube_array[j][1] + fabs(tube_array[j][3]*sin(tube_array[j][2]));
+            }
+            else
+            {
+            p2[1] = tube_array[j][1] + fabs(tube_array[j][3]*sin(tube_array[j][2]));
+            p2[3] = tube_array[j][1] - fabs(tube_array[j][3]*sin(tube_array[j][2]));
+            }
+            double x_int = (b2-b1)/(m1-m2);
+            if(x_int >= p1[0] && x_int >= p2[0] && x_int <= p1[2] && x_int <= p2[2])
+                size += 1;
+        }
+        neighbor_directory[k] = malloc(size * sizeof(int *));
+        intercept_coords[k] = malloc(size * sizeof(double *));
+        for (int j=0; j<tube_count; j++)
+        {   
+            double m2 = tan(tube_array[j][2]);
+            if(m1 == m2)
+                continue;
+            double b2 = tube_array[j][1]-m2*tube_array[j][0];
+            double p2[4];
+            p2[0] = tube_array[j][0] - fabs(tube_array[j][3]*cos(tube_array[j][2]));
+            p2[2] = tube_array[j][0] + fabs(tube_array[j][3]*cos(tube_array[j][2]));
+            if(m2 >= 0)
+            {   
+                p2[1] = tube_array[j][1] - fabs(tube_array[j][3]*sin(tube_array[j][2]));
+                p2[3] = tube_array[j][1] + fabs(tube_array[j][3]*sin(tube_array[j][2]));
+            }
+            else
+            {
+                p2[1] = tube_array[j][1] + fabs(tube_array[j][3]*sin(tube_array[j][2]));
+                p2[3] = tube_array[j][1] - fabs(tube_array[j][3]*sin(tube_array[j][2]));
+            }
+            double x_int = (b2-b1)/(m1-m2);
+            if(x_int >= p1[0] && x_int >= p2[0] && x_int <= p1[2] && x_int <= p2[2])
+            {
+              neighbor_directory[k][size - j] = 
+              size += 1;
+            }
+        }
+    }
+    //clear your dynamic memory.
+    return current;
+}
+*/
 
 void compressNetwork(int direction)
 {     
