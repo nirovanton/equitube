@@ -26,7 +26,7 @@
 
 //GLOBALS 
 //=========================================
-#define tube_count 5 
+#define tube_count 35
 double field_size = 10;
 double energy;
 double radius = .1;
@@ -37,7 +37,7 @@ double p_initial[tube_count][4], p_gr[tube_count][4];
 int steps = 1, mstep = 0;
 int pgr_req = 0, compress = 0, decompress = 0;
 double iteration_array[tube_count][9];
-int done = 0, poz = 1, sstep = 1;
+int done = 0, poz = 1, sstep = 1, rlx = 0, rlx_cntr = 0;
 //=========================================
 
 double calculateEnergy()
@@ -108,6 +108,9 @@ double calculateEnergy()
 
 void relaxNetwork()
 {
+    double E_initial = calculateEnergy();
+    rlx = 0;
+
     printf("%s \n","\n============================================");
     for(int j = 0; j < tube_count; j++)
     {
@@ -334,6 +337,15 @@ void relaxNetwork()
         }
     }
 
+    if((E_initial-calculateEnergy()) <= 1e-300)
+        rlx_cntr +=1;
+    else
+        rlx_cntr = 0;
+    if(rlx_cntr == 3)
+        rlx = 1;
+
+
+
     printf("%s \n","--------------------------------------");
     printf("%s \n","ID \ttheta \t\tslope \t\tx_cm");
     for (int i = 0; i < tube_count; i++)
@@ -504,6 +516,7 @@ void GUI()
     DefineBool("Single Step",&sstep);
     DefineInt("Steps", &steps);
     DefineBool("multi-step", &mstep);
+    DefineBool("relaxed", &rlx);
     DefineBool("Done",&done);
     EndMenu();
 }
@@ -540,7 +553,7 @@ int main ()
             }
             mstep = 0;
         }
-        if (!poz||!sstep)
+        if (( !poz || !sstep ) && !rlx )
         {
             sstep=1;
             energy = calculateEnergy();
