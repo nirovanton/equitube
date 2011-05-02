@@ -26,7 +26,7 @@
 
 //GLOBALS 
 //=========================================
-#define tube_count 30
+#define tube_count 50
 double field_size = 10;
 double energy;
 double radius = .1, current = .0;
