@@ -26,7 +26,7 @@
 
 //GLOBALS 
 //=========================================
-#define tube_count 50 
+#define tube_count 30
 double field_size = 10;
 double energy;
 double radius = .1, current = .0;
@@ -34,10 +34,10 @@ double vand_const = .01;
 double spring_const = .01, vspring = .001; 
 double tube_array[tube_count][4], tube_array_init[tube_count][4];
 double p_initial[tube_count][4], p_gr[tube_count][4];
-int steps = 1, mstep = 0;
+int steps = 1, mstep = 0, itter = 0;
 int pgr_req = 0, compress = 0, decompress = 0;
 double iteration_array[tube_count][9];
-int done = 0, poz = 1, sstep = 1, rlx = 0, rlx_cntr = 0;
+int done = 0, poz = 1, sstep = 1, rlx = 0, rlx_cntr = 0, prnt = 0;
 
 // for current calculations
 //--------------------------
@@ -486,6 +486,8 @@ void Initialize()
 {
     srand(time(0));
 
+    prnt = 0;
+    itter = 0;
     double max_angle = M_PI/2;
     double min_angle = -M_PI/2;
  
@@ -494,9 +496,15 @@ void Initialize()
     {
         // Random variables
         double angle = (min_angle-max_angle)*(double)rand()/(double)(RAND_MAX)+max_angle;
+
         double x_cm = field_size*(double)rand()/(double)(RAND_MAX);
         double y_cm = field_size*(double)rand()/(double)(RAND_MAX);
         double length = 3-(double)rand()/(double)(RAND_MAX);
+
+        //double x_cm = 5.0;
+        //double y_cm = 5.0;
+        //double length = 4.0;
+
 
         // Initialize the iteration array.
         // 0 -> x_iter  1-> x+  2-> x-
@@ -508,7 +516,7 @@ void Initialize()
         iteration_array[i][3] = .005;
         iteration_array[i][4] = 0;
         iteration_array[i][5] = 0;
-        iteration_array[i][6] = .002;
+        iteration_array[i][6] = .00002;
         iteration_array[i][7] = 0;
         iteration_array[i][8] = 0;
 
@@ -533,6 +541,8 @@ void Initialize()
             p_initial[i][3] = y_cm - fabs(length*sin(angle));
         }
     }
+    
+    //printf("%lf ", fabs(180*(tube_array[0][2]-tube_array[1][2])/M_PI));
 }
 
 void getGraphics()
@@ -589,14 +599,14 @@ void GUI()
     DefineDouble("vK", &vspring); 
     DefineDouble("Energy",&energy);
     DefineGraph(curve2d_,"Tubes");
-    DefineFunction("Initialize",&Initialize);
     DefineBool("Compress",&compress);
     DefineBool("Decompress",&decompress);
+    DefineFunction("Initialize",&Initialize);
+    DefineBool("relaxed", &rlx);
     DefineBool("Pause",&poz);
     DefineBool("Single Step",&sstep);
     DefineInt("Steps", &steps);
     DefineBool("multi-step", &mstep);
-    DefineBool("relaxed", &rlx);
     DefineBool("Done",&done);
     EndMenu();
 }
@@ -607,6 +617,7 @@ int main ()
     Initialize();
     GUI();
     int itter = 0;
+
 
     while (!done)
     {
@@ -649,14 +660,19 @@ int main ()
                 decompress = 0;
             }
             //sleep(1);
-
-            printf("%i ", itter);
-            printf("%lf \n",calculateEnergy());
+            //printf("%i ", itter);
+            //printf("%lf \n",calculateEnergy());
             relaxNetwork();
             itter += 1;
         } 
         else
             sleep(1);
+        if(rlx && !prnt)
+        {
+            printf("%s \n", "Relaxed.");
+            //printf("%lf \n",fabs(180*(tube_array[0][2]-tube_array[1][2])/M_PI));
+            prnt = 1;
+        }
     }
 }
 
