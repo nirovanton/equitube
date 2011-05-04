@@ -112,6 +112,7 @@ double calculateEnergy()
     return potential;
 }
 
+
 void relaxNetwork()
 {
     double E_initial = calculateEnergy();
@@ -349,20 +350,12 @@ void relaxNetwork()
         rlx_cntr = 0;
     if(rlx_cntr == 3)
         rlx = 1;
-
-
-
-    /*printf("%s \n","--------------------------------------");
-    printf("%s \n","ID \ttheta \t\tslope \t\tx_cm");
-    for (int i = 0; i < tube_count; i++)
-    {
-        printf("%i \t",i);
-        printf("%lf \t",180*tube_array[i][2]/M_PI);
-        printf("%lf \t",tan(tube_array[i][2]));
-        printf("%lf \t\n",tube_array[i][0]);
-    }*/
 }
 
+
+// I failed to make this work. I will have it going in the summer,
+// I am out of time.
+//
 /*
 double calculateCurrent()
 {
